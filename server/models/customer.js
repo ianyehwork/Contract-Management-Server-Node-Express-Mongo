@@ -55,10 +55,10 @@ CustomerSchema.methods.toJSON = function(){
         'sContact', 
         'pPhone',
         'sPhone',
-        'address',
-        'dateCreated',
-        'dateModified'
+        'address'
     ]);
+    obj.dateCreated = posterObject.dateCreated;
+    obj.dateModified = posterObject.dateCreated;
     obj.vehicles = [];
     _.forEach(posterObject.vehicles, (v) => {
         obj.vehicles.push(v.vin);

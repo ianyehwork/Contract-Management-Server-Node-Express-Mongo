@@ -4,7 +4,7 @@
 const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 var {Customer} = require('./../models/customer');
-
+const {generateLocalDateTime} = require('./../util/utility');
 const CUSTOMER_POST_API = (request, response) => {
     var body = _.pick(request.body, [
         'pContact', 
@@ -17,6 +17,8 @@ const CUSTOMER_POST_API = (request, response) => {
     _.forEach(request.body.vehicles, function(value) {
         customer.vehicles.push({vin: _.toString(value)});
     });
+    customer.dateCreated = generateLocalDateTime();
+    customer.dateModified = generateLocalDateTime();
     customer.save().then((doc) => {
         response.send(doc);
     }, (err) => {
@@ -83,7 +85,7 @@ const CUSTOMER_PATCH_API = (request, response) => {
     _.forEach(request.body.vehicles, function(value) {
         body.vehicles.push({vin: _.toString(value)});
     });
-    body.dateModified = new Date();
+    body.dateModified = generateLocalDateTime();
 
     if(!ObjectID.isValid(id)){
         return response.status(404).send();

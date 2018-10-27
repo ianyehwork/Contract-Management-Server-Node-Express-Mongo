@@ -38,7 +38,16 @@ const generateRandomToken = (length) => {
     return b.join("");
 }
 
+/**
+ * Generate the local date time (UTC+8)
+ */
+const generateLocalDateTime = () => {
+    var date = new Date();
+    return new Date(date.getTime() + 8 * 60 * 60 * 1000);
+}
+
 module.exports = {
     convertDateTimeToNumber,
-    generateRandomToken
+    generateRandomToken,
+    generateLocalDateTime
 };
