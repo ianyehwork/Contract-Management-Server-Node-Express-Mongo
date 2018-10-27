@@ -1,9 +1,7 @@
-/**
- * 1. Create the Javascript File for the new Schema
- */
 const mongoose = require('mongoose');
+const _ = require('lodash');
 
-const VehicleSchema = new Schema({
+const VehicleSchema = new mongoose.Schema({
     vin: {
         type: String,
         required: [true, 'Vehicle Number is required.'],
@@ -12,7 +10,7 @@ const VehicleSchema = new Schema({
     }
 });
 
-const CustomerSchema = new Schema({
+const CustomerSchema = new mongoose.Schema({
     pContact: {
         type: String,
         required: [true, 'Primary Contact is required.'],
@@ -48,8 +46,30 @@ const CustomerSchema = new Schema({
     }
 });
 
+CustomerSchema.methods.toJSON = function(){
+    var poster = this;
+    var posterObject = poster.toObject();
+    var obj = _.pick(posterObject, [
+        '_id',
+        'pContact', 
+        'sContact', 
+        'pPhone',
+        'sPhone',
+        'address',
+        'dateCreated',
+        'dateModified'
+    ]);
+    obj.vehicles = [];
+    _.forEach(posterObject.vehicles, (v) => {
+        obj.vehicles.push(v.vin);
+    });
+    return obj;
+};
+
 // This represents the entire collection of data
 const Customer = mongoose.model("Customer", CustomerSchema);
 
 // Only export the model class
-module.exports = Customer;
+module.exports = {
+    Customer
+};
