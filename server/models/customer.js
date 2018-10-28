@@ -47,9 +47,9 @@ const CustomerSchema = new mongoose.Schema({
 });
 
 CustomerSchema.methods.toJSON = function(){
-    var poster = this;
-    var posterObject = poster.toObject();
-    var obj = _.pick(posterObject, [
+    var model = this;
+    var modelObject = model.toObject();
+    var obj = _.pick(modelObject, [
         '_id',
         'pContact', 
         'sContact', 
@@ -57,10 +57,10 @@ CustomerSchema.methods.toJSON = function(){
         'sPhone',
         'address'
     ]);
-    obj.dateCreated = posterObject.dateCreated;
-    obj.dateModified = posterObject.dateCreated;
+    obj.dateCreated = modelObject.dateCreated;
+    obj.dateModified = modelObject.dateCreated;
     obj.vehicles = [];
-    _.forEach(posterObject.vehicles, (v) => {
+    _.forEach(modelObject.vehicles, (v) => {
         obj.vehicles.push(v.vin);
     });
     return obj;

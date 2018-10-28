@@ -1,19 +1,19 @@
 /**
- * This file represents the REST API for Customer collection.
+ * This file represents the REST API for Parking Area collection.
  */
 const _ = require('lodash');
 const {ObjectID} = require('mongodb');
-var {Customer} = require('./../models/customer');
+var {ParkingArea} = require('./../models/parking-area');
 const {generateLocalDateTime} = require('./../util/utility');
-const CUSTOMER_POST_API = (request, response) => {
+const PARKING_AREA_POST_API = (request, response) => {
     var body = _.pick(request.body, [
-        'pContact', 
-        'sContact', 
-        'pPhone',
-        'sPhone',
-        'address'
+        'identifier', 
+        'address',
+        'defaultDeposit', 
+        'defaultRent',
+        'comment'
     ]);
-    var model = new Customer(body);
+    var model = new ParkingArea(body);
     _.forEach(request.body.vehicles, function(value) {
         model.vehicles.push({vin: _.toString(value)});
     });
@@ -26,21 +26,21 @@ const CUSTOMER_POST_API = (request, response) => {
     });
 };
 
-const CUSTOMER_GET_API = (request, response) => {
-    Customer.find({}).then((model) => {
+const PARKING_AREA_GET_API = (request, response) => {
+    ParkingArea.find({}).then((model) => {
         response.send(model); 
     }, (err) => {
         response.status(400).send(err);
     });
 };
 
-const CUSTOMER_GET_ID_API = (request, response) => {
+const PARKING_AREA_GET_ID_API = (request, response) => {
     var id = request.params.id;
     if(!ObjectID.isValid(id)){
         return response.status(404).send();
     }
 
-    Customer.findOne({
+    ParkingArea.findOne({
         _id: id,
     }).then((model) => {
         if(!model) {
@@ -52,13 +52,13 @@ const CUSTOMER_GET_ID_API = (request, response) => {
     });
 };
 
-const CUSTOMER_DELETE_API = (request, response) => {
+const PARKING_AREA_DELETE_API = (request, response) => {
     var id = request.params.id;
     if(!ObjectID.isValid(id)){
         return response.status(404).send();
     }
 
-    Customer.findOneAndRemove({
+    ParkingArea.findOneAndRemove({
         _id: id
     }).then((model) => {
         if(!model) {
@@ -70,15 +70,15 @@ const CUSTOMER_DELETE_API = (request, response) => {
     });
 };
 
-const CUSTOMER_PATCH_API = (request, response) => {
+const PARKING_AREA_PATCH_API = (request, response) => {
     var id = request.params.id;
     // Only extract the properties required if exist
     var body = _.pick(request.body, [
-        'pContact', 
-        'sContact', 
-        'pPhone',
-        'sPhone',
-        'address'
+        'identifier', 
+        'address',
+        'defaultDeposit', 
+        'defaultRent',
+        'comment'
     ]);
 
     body.vehicles = [];
@@ -91,7 +91,7 @@ const CUSTOMER_PATCH_API = (request, response) => {
         return response.status(404).send();
     }
 
-    Customer.findOneAndUpdate({ _id: id}, 
+    ParkingArea.findOneAndUpdate({ _id: id}, 
                           {$set: body}, 
                           {new: true}).then((model) => {
         if(!model) {
@@ -104,9 +104,9 @@ const CUSTOMER_PATCH_API = (request, response) => {
 };
 
 module.exports = {
-    CUSTOMER_POST_API,
-    CUSTOMER_GET_API,
-    CUSTOMER_GET_ID_API,
-    CUSTOMER_DELETE_API,
-    CUSTOMER_PATCH_API
+    PARKING_AREA_POST_API,
+    PARKING_AREA_GET_API,
+    PARKING_AREA_GET_ID_API,
+    PARKING_AREA_DELETE_API,
+    PARKING_AREA_PATCH_API
 };
