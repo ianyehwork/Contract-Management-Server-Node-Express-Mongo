@@ -5,12 +5,13 @@ const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 var {ParkingLot} = require('./../models/parking-lot');
 const {generateLocalDateTime} = require('./../util/utility');
+const url = require('url');
+
 const PARKING_LOT_POST_API = (request, response) => {
     var body = _.pick(request.body, [
         'identifier', 
         'deposit', 
         'rent',
-        'status',
         'comment',
         '_area'
     ]);
@@ -25,7 +26,12 @@ const PARKING_LOT_POST_API = (request, response) => {
 };
 
 const PARKING_LOT_GET_API = (request, response) => {
-    ParkingLot.find({}).then((model) => {
+    var queryData = url.parse(request.url, true).query;
+    var filter = {};
+    if(queryData._area) {
+        filter._area = queryData._area;
+    }
+    ParkingLot.find(filter).then((model) => {
         response.send(model); 
     }, (err) => {
         response.status(400).send(err);
@@ -75,7 +81,6 @@ const PARKING_LOT_PATCH_API = (request, response) => {
         'identifier', 
         'deposit', 
         'rent',
-        'status',
         'comment'
     ]);
 

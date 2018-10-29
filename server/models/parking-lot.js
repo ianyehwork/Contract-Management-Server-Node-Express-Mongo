@@ -15,7 +15,8 @@ const ParkingLotSchema = new mongoose.Schema({
         type: Number
     },
     status: {
-        type: String
+        type: String,
+        default: 'A'
     },
     comment: {
         type: String,
@@ -30,7 +31,8 @@ const ParkingLotSchema = new mongoose.Schema({
         default: Date.now
     },
     _area: {
-        type: mongoose.Schema.Types.ObjectId, 
+        type: mongoose.Schema.Types.ObjectId,
+        required: [true, 'Parking Area Id is required.'],
         ref:'ParkingArea'
     }
 });
