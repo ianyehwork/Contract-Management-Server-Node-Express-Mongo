@@ -6,17 +6,20 @@ const ParkingLotSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Identifier is required.'],
         minlength: 1,
-        trim: true
+        trim: true,
+        unique: true
     },
     deposit: {
-        type: Number
+        type: Number,
+        min: [0, 'Deposit cannot be negative.']
     },
     rent: {
-        type: Number
+        type: Number,
+        min: [0, 'Rent cannot be negative.']
     },
     status: {
-        type: String,
-        default: 'A'
+        type: Boolean,
+        default: true
     },
     comment: {
         type: String,

@@ -6,17 +6,20 @@ const ParkingAreaSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Identifier is required.'],
         minlength: 1,
-        trim: true
+        trim: true,
+        unique: true
     },
     address: {
         type: String,
         trim: true
     },
     defaultDeposit: {
-        type: Number
+        type: Number,
+        min: [0, 'Default Deposit cannot be negative.']
     },
     defaultRent: {
-        type: Number
+        type: Number,
+        min: [0, 'Default Rent cannot be negative.']
     },
     comment: {
         type: String,
