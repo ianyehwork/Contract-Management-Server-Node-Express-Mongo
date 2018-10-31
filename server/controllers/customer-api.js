@@ -5,6 +5,8 @@ const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 var {Customer} = require('./../models/customer');
 const {generateLocalDateTime} = require('./../util/utility');
+const url = require('url');
+
 const CUSTOMER_POST_API = (request, response) => {
     var body = _.pick(request.body, [
         'pContact', 
@@ -27,7 +29,12 @@ const CUSTOMER_POST_API = (request, response) => {
 };
 
 const CUSTOMER_GET_API = (request, response) => {
-    Customer.find({}).then((model) => {
+    var queryData = url.parse(request.url, true).query;
+    var filter = {};
+    if(queryData.startWith) {
+        filter.pContact = {$regex : "^" + queryData.startWith};
+    }
+    Customer.find(filter).then((model) => {
         response.send(model); 
     }, (err) => {
         response.status(400).send(err);
