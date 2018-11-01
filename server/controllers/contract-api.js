@@ -40,6 +40,11 @@ const CONTRACT_POST_API = (request, response) => {
             path: '_lot',
             select: 'identifier deposit rent'
         }).then((model) => {
+            var vehicles = [];
+            _.forEach(model.vehicles, function(value) {
+                vehicles.push({vin: _.toString(value.vin)});
+            });
+            model.vehicles = vehicles;
             return response.send(model);
         }).catch((err) => {
             response.status(400).send();
@@ -105,11 +110,18 @@ const CONTRACT_PATCH_API = (request, response) => {
         return response.status(404).send();
     }
 
-    Contract.findOneAndUpdate({ _id: id}, 
-                          {$set: body}, 
-                          {new: true}).then((model) => {
+    Contract.findOneAndUpdate({ _id: id}, {$set: body}, {new: true}).populate({
+        path: '_customer',
+        select: 'pContact pPhone vehicles'
+    }).populate({
+        path: '_lot',
+        select: 'identifier deposit rent'
+    }).then((model) => {
         if(!model) {
             return response.status(404).send();
+        }
+        if(!model.active) {
+            ParkingLot.findOneAndUpdate({_id: model._lot._id}, {$set: {status: true}}).then(() => {});
         }
         return response.send(model);
     }).catch((err) => {
