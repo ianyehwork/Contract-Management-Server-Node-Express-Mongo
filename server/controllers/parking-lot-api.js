@@ -31,6 +31,9 @@ const PARKING_LOT_GET_API = (request, response) => {
     if(queryData._area) {
         filter._area = queryData._area;
     }
+    if(queryData.status) {
+        filter.status = queryData.status;
+    }
     ParkingLot.find(filter).then((model) => {
         response.send(model); 
     }, (err) => {

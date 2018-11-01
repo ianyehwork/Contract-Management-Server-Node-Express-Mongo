@@ -33,7 +33,18 @@ const CONTRACT_POST_API = (request, response) => {
     model.dateCreated = generateLocalDateTime();
     model.dateModified = generateLocalDateTime();
     model.save().then((doc) => {
-        response.send(doc);
+        Contract.findOne({ _id: doc._id}).populate({
+            path: '_customer',
+            select: 'pContact pPhone vehicles'
+        }).populate({
+            path: '_lot',
+            select: 'identifier deposit rent'
+        }).then((model) => {
+            return response.send(model);
+        }).catch((err) => {
+            response.status(400).send();
+        });
+        
     }, (err) => {
         response.status(400).send(err);
     });
