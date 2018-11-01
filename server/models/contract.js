@@ -1,25 +1,6 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 
-const PaymentSchema = new mongoose.Schema({
-    dateCreated: {
-        type: Date,
-        default: Date.now
-    },
-    amount: {
-        type: Number,
-        required: [true, 'Payment Amount is required.'],
-    },
-    type: {
-        type: Number,
-        required: [true, 'Payment Type is required.'],
-    },
-    comment: {
-        type: String,
-        trim: true
-    }
-});
-
 const ContractSchema = new mongoose.Schema({
     _customer: {
         type: mongoose.Schema.Types.ObjectId,
@@ -60,7 +41,6 @@ const ContractSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
-    payments: [PaymentSchema],
     dateCreated: {
         type: Date,
         default: Date.now
@@ -85,7 +65,6 @@ ContractSchema.methods.toJSON = function(){
         'comment',
         'active',
         'pTotal',
-        'payments',
         'dateCreated',
         'dateModified'
     ]);

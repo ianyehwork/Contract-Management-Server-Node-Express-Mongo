@@ -5,6 +5,7 @@ const CustomerRoutes = require('./customer-routes');
 const ParkingAreaRoutes = require('./parking-area-routes');
 const ParkingLotRoutes = require('./parking-lot-routes');
 const ContractRoutes = require('./contract-routes');
+const PaymentRoutes = require('./payment-routes');
 
 module.exports = (app) => {
     // App Routes Definition
@@ -14,4 +15,5 @@ module.exports = (app) => {
     ParkingAreaRoutes(app);
     ParkingLotRoutes(app);
     ContractRoutes(app);
+    PaymentRoutes(app);
 }
