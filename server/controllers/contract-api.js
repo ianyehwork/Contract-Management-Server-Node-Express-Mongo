@@ -59,7 +59,11 @@ const CONTRACT_POST_API = (request, response) => {
 };
 
 const CONTRACT_GET_API = (request, response) => {
+    var queryData = url.parse(request.url, true).query;
     var filter = {};
+    if(queryData.active) {
+        filter.active = queryData.active;
+    }
     Contract.find(filter).populate({
         path: '_customer',
         select: 'pContact pPhone vehicles'

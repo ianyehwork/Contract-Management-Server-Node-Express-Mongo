@@ -66,3 +66,6 @@ module.exports = app;
 
 // Supertest: A tool that helps us make fake HTTP requests to
 // our application
+
+// mongodb://{Username}:{Password}@{Server Address}
+// :{Server Port}/{Database Name}
