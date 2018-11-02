@@ -28,6 +28,18 @@ const ContractSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    pYear: {
+        type: Number,
+        required: true
+    },
+    pMonth: {
+        type: Number,
+        required: true
+    },
+    pDay: {
+        type: Number,
+        required: true
+    },
     comment: {
         type: String,
         trim: true
@@ -62,6 +74,9 @@ ContractSchema.methods.toJSON = function(){
         'sMonth',
         'sDay',
         'pFrequency',
+        'pYear',
+        'pMonth',
+        'pDay',
         'comment',
         'active',
         'pTotal',

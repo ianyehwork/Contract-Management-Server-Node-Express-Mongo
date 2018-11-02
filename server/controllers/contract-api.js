@@ -29,6 +29,9 @@ const CONTRACT_POST_API = (request, response) => {
         }
     })
 
+    body.pYear = body.sYear;
+    body.pMonth = body.sMonth;
+    body.pDay = body.sDay;
     var model = new Contract(body);
     model.dateCreated = generateLocalDateTime();
     model.dateModified = generateLocalDateTime();

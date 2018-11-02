@@ -4,8 +4,10 @@
 const _ = require('lodash');
 const { ObjectID } = require('mongodb');
 var { Payment } = require('./../models/payment');
+var { Contract } = require('./../models/contract');
 const { generateLocalDateTime } = require('./../util/utility');
 const url = require('url');
+const moment = require('moment');
 
 const PAYMENT_POST_API = (request, response) => {
     var body = _.pick(request.body, [
@@ -14,11 +16,40 @@ const PAYMENT_POST_API = (request, response) => {
         'amount',
         'comment'
     ]);
-    var model = new Payment(body);
-    model.dateCreated = generateLocalDateTime();
-    model.dateModified = generateLocalDateTime();
-    model.save().then((doc) => {
-        response.send(doc);
+
+    Contract.findOne({ _id: body._contract }).populate({
+        path: '_lot',
+        select: 'rent'
+    }).then(function (doc) {
+
+        var model = new Payment(body);
+        model.dateCreated = generateLocalDateTime();
+        model.dateModified = generateLocalDateTime();
+
+        // console.log(model);
+        if (model.type === 'R') {
+            doc.pTotal = doc.pTotal + model.amount;
+            var periodPTotal = doc._lot.rent * doc.pFrequency;
+            var count = parseInt(doc.pTotal / periodPTotal);
+            // console.log(count);
+            var date = moment(new Date(doc.sYear, doc.sMonth - 1, doc.sDay));
+            // console.log(date);
+            // console.log(count * doc.pFrequency);
+            date.add(count * doc.pFrequency, 'months');
+            // console.log(date);
+            doc.pYear = date.year();
+            doc.pMonth = date.month() + 1;
+            doc.pDay = date.date();
+            // console.log(doc);
+        }
+
+        Promise.all([doc.save(), model.save()])
+            .then((result) => {
+                response.send(result[1]);
+            }, (err) => {
+                response.status(400).send(err);
+            });
+
     }, (err) => {
         response.status(400).send(err);
     });
@@ -43,9 +74,7 @@ const PAYMENT_GET_ID_API = (request, response) => {
         return response.status(404).send();
     }
 
-    Payment.findOne({
-        _id: id,
-    }).then((model) => {
+    Payment.findOne({ _id: id }).then((model) => {
         if (!model) {
             return response.status(404).send();
         }
@@ -60,31 +89,68 @@ const PAYMENT_DELETE_API = (request, response) => {
     response.status(405).send();
 };
 
+// Payment Type Cannot be changed
 const PAYMENT_PATCH_API = (request, response) => {
     var id = request.params.id;
     // Only extract the properties required if exist
     var body = _.pick(request.body, [
-        'type',
         'amount',
         'comment'
     ]);
-
-    body.dateModified = generateLocalDateTime();
 
     if (!ObjectID.isValid(id)) {
         return response.status(404).send();
     }
 
-    Payment.findOneAndUpdate({ _id: id, _contract: request.body._contract },
-        { $set: body },
-        { new: true }).then((model) => {
-            if (!model) {
-                return response.status(404).send();
-            }
-            return response.send(model);
-        }).catch((err) => {
-            response.status(400).send();
-        });
+    Payment.findOne({ _id: id, _contract: request.body._contract }).then((orig) => {
+        if (orig.type == 'R') {
+            Contract.findOne({ _id: orig._contract }).populate({
+                path: '_lot',
+                select: 'rent'
+            }).then(function (doc) {
+
+                doc.pTotal = doc.pTotal - orig.amount + body.amount;
+                var periodPTotal = doc._lot.rent * doc.pFrequency;
+                var count = parseInt(doc.pTotal / periodPTotal);
+                // console.log(count);
+                var date = moment(new Date(doc.sYear, doc.sMonth - 1, doc.sDay));
+                // console.log(date);
+                // console.log(count * doc.pFrequency);
+                date.add(count * doc.pFrequency, 'months');
+                // console.log(date);
+                doc.pYear = date.year();
+                doc.pMonth = date.month() + 1;
+                doc.pDay = date.date();
+                // console.log(doc);
+
+                orig.comment = body.comment;
+                orig.amount = body.amount;
+                orig.dateModified = generateLocalDateTime();
+
+                Promise.all([doc.save(), orig.save()])
+                    .then((result) => {
+                        response.send(result[1]);
+                    }, (err) => {
+                        response.status(400).send(err);
+                    });
+
+            }, (err) => {
+                response.status(400).send(err);
+            });
+        } else {
+            orig.comment = body.comment;
+            orig.amount = body.amount;
+            orig.dateModified = generateLocalDateTime();
+            orig.save().then((model) => {
+                if (!model) {
+                    return response.status(404).send();
+                }
+                return response.send(model);
+            });
+        }
+    }).catch((err) => {
+        response.status(400).send();
+    });
 };
 
 module.exports = {
