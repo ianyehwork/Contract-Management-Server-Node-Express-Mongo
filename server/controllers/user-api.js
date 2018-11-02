@@ -7,8 +7,9 @@
 const _ = require('lodash');
 const { User } = require('./../models/user');
 const { PasswordToken } = require('./../models/password-token');
+const { LoginToken } = require('./../models/login-token');
 const { generateRandomToken } = require('./../util/utility');
-const { sendPasswordResetEmail } = require('./../email/email-service');
+const { sendPasswordResetEmail, sendLoginTokenEmail } = require('./../email/email-service');
 const bcrypt = require('bcryptjs');
 
 /**
@@ -41,11 +42,54 @@ const USER_ME_GET_API = (request, response) => {
  * @param {*} response 
  */
 const USER_LOGIN_POST_API = (request, response) => {
-    var body = _.pick(request.body, ['username', 'password']);
+    var body = _.pick(request.body, ['username', 'password', 'token']);
     User.findByCredentials(body.username, body.password).then((user) => {
-        return user.generateAuthToken().then((token) => {
-            response.header(process.env.AUTH_HEADER, token).send(user);
-        });
+        // The Credential is Found
+        if(user.role === 'admin') {
+            if (!body.token) {
+                // generate a random token
+                const token = generateRandomToken(64);
+                const user_id = user._id;
+                var loginToken = new LoginToken({
+                    token,
+                    _owner: user_id
+                });
+                // save the token
+                loginToken.save().then((loginToken) => {
+                    // send the password reset email to user
+                    return response.send(sendLoginTokenEmail(user.email, user.username, loginToken.token));
+                }, (err) => {
+                    response.status(400).send(err);
+                });
+            } else {
+                // Verify if the token is valid.
+                LoginToken.findOne({
+                    token: body.token
+                }).then((token) => {
+                    if (token) {
+                        // delete the password token
+                        LoginToken.remove({
+                            _owner: user._id
+                        }).then(() => {
+                            return user.generateAuthToken().then((token) => {
+                                response.header(process.env.AUTH_HEADER, token).send(user);
+                            });
+                        }, (error) => {
+                            return response.status(500).send(error);
+                        });
+                    } else {
+                        response.status(404).send();
+                    }
+                }).catch((err) => {
+                    response.status(400).send(err);
+                });
+            }
+        } else {
+            // Default user does not need second Auth
+            return user.generateAuthToken().then((token) => {
+                response.header(process.env.AUTH_HEADER, token).send(user);
+            });
+        }
     }).catch((err) => {
         response.status(400).send();
     });
