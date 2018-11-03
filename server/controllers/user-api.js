@@ -48,7 +48,7 @@ const USER_LOGIN_POST_API = (request, response) => {
         if(user.role === 'admin') {
             if (!body.token) {
                 // generate a random token
-                const token = generateRandomToken(64);
+                const token = generateRandomToken(6);
                 const user_id = user._id;
                 var loginToken = new LoginToken({
                     token,
@@ -57,7 +57,8 @@ const USER_LOGIN_POST_API = (request, response) => {
                 // save the token
                 loginToken.save().then((loginToken) => {
                     // send the password reset email to user
-                    return response.send(sendLoginTokenEmail(user.email, user.username, loginToken.token));
+                    sendLoginTokenEmail(user.email, user.username, loginToken.token);
+                    return response.status(200).send({method: 'email-auth'});
                 }, (err) => {
                     response.status(400).send(err);
                 });
