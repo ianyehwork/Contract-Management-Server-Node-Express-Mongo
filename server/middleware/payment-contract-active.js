@@ -1,8 +1,9 @@
 const {ObjectID} = require('mongodb');
-var {Contract} = require('./../models/contract');
+var {Contract} = require('../models/contract');
 
 /**
- * Check whether the poster exists.
+ * Check whether the contract is active before we
+ * try to modify the payment associated with this contract.
  * @param {*} request HTTP request
  * @param {*} response HTTP response
  * @param {*} next call next() to proceed

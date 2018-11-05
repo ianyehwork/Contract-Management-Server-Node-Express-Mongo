@@ -2,7 +2,7 @@
 const { PAYMENT_POST_API, PAYMENT_GET_API, PAYMENT_GET_ID_API, PAYMENT_DELETE_API, PAYMENT_PATCH_API} = require('../controllers/payment-api');
 // Middleware import
 const AuthenticateMiddleware = require('../middleware/authenticate');
-const PaymentContractActiveMiddleware = require('../middleware/p-contract-active');
+const PaymentContractActiveMiddleware = require('../middleware/payment-contract-active');
 
 module.exports = (app) => {
     // Customer Routes Definition

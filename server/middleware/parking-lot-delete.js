@@ -1,9 +1,9 @@
-const {ObjectID} = require('mongodb');
 var {Contract} = require('./../models/contract');
+const {ObjectID} = require('mongodb');
 
 /**
- * Checks whether the contract is active before we
- * try to modify the contract.
+ * Check whether there exists a contract associated
+ * with the parking lot before we delete it
  * @param {*} request HTTP request
  * @param {*} response HTTP response
  * @param {*} next call next() to proceed
@@ -16,10 +16,9 @@ module.exports = (request, response, next) => {
     }
 
     Contract.findOne({
-        _id: id,
-        active: true
+        _lot: id
     }).then((result) => {
-        if(!result) {
+        if(result) {
             return response.status(400).send();
         }
         next();

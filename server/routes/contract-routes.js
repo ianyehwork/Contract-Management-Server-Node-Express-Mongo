@@ -2,7 +2,7 @@
 const { CONTRACT_POST_API, CONTRACT_GET_API, CONTRACT_GET_ID_API, CONTRACT_DELETE_API, CONTRACT_PATCH_API} = require('../controllers/contract-api');
 // Middleware import
 const AuthenticateMiddleware = require('../middleware/authenticate');
-const ParkingLotAvailableMiddleware = require('../middleware/lot-available');
+const ParkingLotAvailableMiddleware = require('../middleware/parking-lot-available');
 const ContractActiveMiddleware = require('../middleware/contract-active');
 
 module.exports = (app) => {

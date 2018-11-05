@@ -1,19 +1,15 @@
-/**
- * The file represents an authentication middleware to protect
- * private routes.
- */
 const {User, UserRoleEnum} = require('./../models/user');
 const {UserAuth} = require('./../models/user_auth');
 const jwt = require('jsonwebtoken');
 
 /**
  * Check whether the user is authenticated.
- * Check whether the user.role is publisher.
+ * Check whether the user.role is admin.
  * @param {*} request HTTP request
  * @param {*} response HTTP response
  * @param {*} next call next() to proceed
  */
-var authenticate_publisher = (request, response, next) => {
+var authenticate_admin = (request, response, next) => {
     // Retrieve JWT token from the request header
     var token = request.header(process.env.AUTH_HEADER);
     try { 
@@ -47,5 +43,5 @@ var authenticate_publisher = (request, response, next) => {
 };
 
 module.exports = {
-    authenticate_publisher
+    authenticate_admin
 };

@@ -1,7 +1,3 @@
-/**
- * The file represents an authentication middleware to protect
- * private routes.
- */
 const {User} = require('./../models/user');
 const {UserAuth} = require('./../models/user_auth');
 const jwt = require('jsonwebtoken');
