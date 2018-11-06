@@ -8,6 +8,7 @@ var { Contract } = require('./../models/contract');
 const { generateLocalDateTime } = require('./../util/utility');
 const url = require('url');
 const moment = require('moment');
+const Transaction = require('mongoose-transactions')
 
 const PAYMENT_POST_API = (request, response) => {
     var body = _.pick(request.body, [
@@ -26,29 +27,33 @@ const PAYMENT_POST_API = (request, response) => {
         model.dateCreated = generateLocalDateTime();
         model.dateModified = generateLocalDateTime();
 
-        // console.log(model);
         if (model.type === 'R') {
             doc.pTotal = doc.pTotal + model.amount;
             var periodPTotal = doc._lot.rent * doc.pFrequency;
             var count = parseInt(doc.pTotal / periodPTotal);
-            // console.log(count);
             var date = moment(new Date(doc.sYear, doc.sMonth - 1, doc.sDay));
-            // console.log(date);
-            // console.log(count * doc.pFrequency);
             date.add(count * doc.pFrequency, 'months');
-            // console.log(date);
             doc.pYear = date.year();
             doc.pMonth = date.month() + 1;
             doc.pDay = date.date();
-            // console.log(doc);
         }
 
-        Promise.all([doc.save(), model.save()])
-            .then((result) => {
-                response.send(result[1]);
-            }, (err) => {
-                response.status(400).send(err);
+        const transaction = new Transaction();
+        try {
+            transaction.insert('Payment', model);
+            transaction.update('Contract', doc._id, doc, { new: true });
+            transaction.run().then((result) => {
+                response.send(result[0]);
+            }).catch(err => {
+                console.error(err);
+                transaction.rollback().catch(console.error);
+                response.status(500).send();
             });
+        } catch (err) {
+            console.error(err);
+            transaction.rollback().catch(console.error);
+            response.status(500).send();  
+        }
 
     }, (err) => {
         response.status(400).send(err);
@@ -127,13 +132,22 @@ const PAYMENT_PATCH_API = (request, response) => {
                 orig.amount = body.amount;
                 orig.dateModified = generateLocalDateTime();
 
-                Promise.all([doc.save(), orig.save()])
-                    .then((result) => {
-                        response.send(result[1]);
-                    }, (err) => {
-                        response.status(400).send(err);
+                const transaction = new Transaction();
+                try {
+                    transaction.update('Payment', orig._id, orig, { new: true });
+                    transaction.update('Contract', doc._id, doc, { new: true });
+                    transaction.run().then((result) => {
+                        response.send(result[0]);
+                    }).catch(err => {
+                        console.error(err);
+                        transaction.rollback().catch(console.error);
+                        response.status(500).send();
                     });
-
+                } catch (err) {
+                    console.error(err);
+                    transaction.rollback().catch(console.error);
+                    response.status(500).send();  
+                }
             }, (err) => {
                 response.status(400).send(err);
             });
