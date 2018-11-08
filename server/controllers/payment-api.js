@@ -27,8 +27,12 @@ const PAYMENT_POST_API = (request, response) => {
         model.dateCreated = generateLocalDateTime();
         model.dateModified = generateLocalDateTime();
 
-        if (model.type === 'R') {
-            doc.pTotal = doc.pTotal + model.amount;
+        if (model.type !== 'D') {
+            if (model.type === 'R') {
+                doc.pTotal = doc.pTotal + model.amount;
+            } else {
+                doc.pTotal = doc.pTotal - model.amount;
+            }
             var periodPTotal = doc._lot.rent * doc.pFrequency;
             var count = parseInt(doc.pTotal / periodPTotal);
             var date = moment(new Date(doc.sYear, doc.sMonth - 1, doc.sDay));
@@ -36,7 +40,7 @@ const PAYMENT_POST_API = (request, response) => {
             doc.pYear = date.year();
             doc.pMonth = date.month() + 1;
             doc.pDay = date.date();
-        }
+        } 
 
         const transaction = new Transaction();
         try {
@@ -108,30 +112,38 @@ const PAYMENT_PATCH_API = (request, response) => {
     }
 
     Payment.findOne({ _id: id, _contract: request.body._contract }).then((orig) => {
-        if (orig.type == 'R') {
+        if (orig.type == 'D') {
+            orig.comment = body.comment;
+            orig.amount = body.amount;
+            orig.dateModified = generateLocalDateTime();
+            orig.save().then((model) => {
+                if (!model) {
+                    return response.status(404).send();
+                }
+                return response.send(model);
+            });
+        } else {
             Contract.findOne({ _id: orig._contract }).populate({
                 path: '_lot',
                 select: 'rent'
             }).then(function (doc) {
-
-                doc.pTotal = doc.pTotal - orig.amount + body.amount;
+                if(orig.type == 'R') {
+                    doc.pTotal = doc.pTotal - orig.amount + body.amount;
+                } else {
+                    doc.pTotal = doc.pTotal + orig.amount - body.amount;
+                }
                 var periodPTotal = doc._lot.rent * doc.pFrequency;
                 var count = parseInt(doc.pTotal / periodPTotal);
-                // console.log(count);
                 var date = moment(new Date(doc.sYear, doc.sMonth - 1, doc.sDay));
-                // console.log(date);
-                // console.log(count * doc.pFrequency);
                 date.add(count * doc.pFrequency, 'months');
-                // console.log(date);
                 doc.pYear = date.year();
                 doc.pMonth = date.month() + 1;
                 doc.pDay = date.date();
-                // console.log(doc);
 
                 orig.comment = body.comment;
                 orig.amount = body.amount;
                 orig.dateModified = generateLocalDateTime();
-
+                
                 const transaction = new Transaction();
                 try {
                     transaction.update('Payment', orig._id, orig, { new: true });
@@ -150,16 +162,6 @@ const PAYMENT_PATCH_API = (request, response) => {
                 }
             }, (err) => {
                 response.status(400).send(err);
-            });
-        } else {
-            orig.comment = body.comment;
-            orig.amount = body.amount;
-            orig.dateModified = generateLocalDateTime();
-            orig.save().then((model) => {
-                if (!model) {
-                    return response.status(404).send();
-                }
-                return response.send(model);
             });
         }
     }).catch((err) => {
