@@ -29,7 +29,7 @@ const PARKING_LOT_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
     queryData.page = _.toInteger(queryData.page);
     queryData.pageSize = _.toInteger(queryData.pageSize);
-
+    
     var filter = {};
     if (queryData.field && queryData.match) {
         filter[queryData.field] = { $regex: "^" + queryData.match };
@@ -42,7 +42,7 @@ const PARKING_LOT_GET_API = (request, response) => {
     }
     // Convert String to Object Property using []
     const query = ParkingLot.find(filter)
-        .sort({ [queryData.order]: (queryData.reverse ? -1 : 1 )})
+        .sort({ [queryData.order]: (queryData.reverse ? 1 : -1) })
         .skip((queryData.page - 1) * queryData.pageSize)
         .limit(queryData.pageSize);
 

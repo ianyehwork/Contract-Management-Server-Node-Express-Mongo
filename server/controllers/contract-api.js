@@ -75,6 +75,7 @@ const CONTRACT_GET_API = (request, response) => {
     queryData.page = _.toInteger(queryData.page);
     queryData.pageSize = _.toInteger(queryData.pageSize);
 
+    // Filter
     var filter = {};
     if (queryData.field && queryData.match) {
         filter[queryData.field] = { $regex: "^" + queryData.match };
@@ -82,9 +83,22 @@ const CONTRACT_GET_API = (request, response) => {
     if (queryData.active) {
         filter.active = queryData.active;
     }
+
+    // Sort
+    var sortObj = {};
+    if (queryData.order === 'pDate') {
+        sortObj = {
+            pYear: (queryData.reverse ? 1 : -1 ),
+            pMonth: (queryData.reverse ? 1 : -1 ),
+            pDay: (queryData.reverse ? 1 : -1 )
+        };
+    } else {
+        sortObj = { [queryData.order]: (queryData.reverse ? 1 : -1)}
+    }
+
     // Convert String to Object Property using []
     const query = Contract.find(filter)
-        .sort({ [queryData.order]: (queryData.reverse ? -1 : 1 )})
+        .sort(sortObj)
         .skip((queryData.page - 1) * queryData.pageSize)
         .limit(queryData.pageSize)
         .populate({
