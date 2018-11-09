@@ -72,21 +72,39 @@ const CONTRACT_POST_API = (request, response) => {
 
 const CONTRACT_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
+    queryData.page = _.toInteger(queryData.page);
+    queryData.pageSize = _.toInteger(queryData.pageSize);
+
     var filter = {};
+    if (queryData.field && queryData.match) {
+        filter[queryData.field] = { $regex: "^" + queryData.match };
+    }
     if (queryData.active) {
         filter.active = queryData.active;
     }
-    Contract.find(filter).populate({
-        path: '_customer',
-        select: 'pContact pPhone vehicles'
-    }).populate({
-        path: '_lot',
-        select: 'identifier deposit rent'
-    }).then((model) => {
-        response.send(model);
-    }, (err) => {
-        response.status(400).send(err);
-    });
+    // Convert String to Object Property using []
+    const query = Contract.find(filter)
+        .sort({ [queryData.order]: (queryData.reverse ? -1 : 1 )})
+        .skip((queryData.page - 1) * queryData.pageSize)
+        .limit(queryData.pageSize)
+        .populate({
+            path: '_customer',
+            select: 'pContact pPhone vehicles'
+        }).populate({
+            path: '_lot',
+            select: 'identifier deposit rent'
+        });
+
+    Promise.all([query, Contract.find(filter).countDocuments()])
+        .then((results) => {
+            response.send({
+                data: results[0],
+                collectionSize: results[1]
+            });
+        }).catch((err) => {
+            console.log(err);
+            response.status(500).send();
+        });
 };
 
 const CONTRACT_GET_ID_API = (request, response) => {
