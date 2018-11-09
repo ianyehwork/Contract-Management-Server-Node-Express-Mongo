@@ -27,18 +27,35 @@ const PARKING_LOT_POST_API = (request, response) => {
 
 const PARKING_LOT_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
+    queryData.page = _.toInteger(queryData.page);
+    queryData.pageSize = _.toInteger(queryData.pageSize);
+
     var filter = {};
+    if (queryData.field && queryData.match) {
+        filter[queryData.field] = { $regex: "^" + queryData.match };
+    }
     if(queryData._area) {
         filter._area = queryData._area;
     }
     if(queryData.status) {
         filter.status = queryData.status;
     }
-    ParkingLot.find(filter).then((model) => {
-        response.send(model); 
-    }, (err) => {
-        response.status(400).send(err);
-    });
+    // Convert String to Object Property using []
+    const query = ParkingLot.find(filter)
+        .sort({ [queryData.order]: (queryData.reverse ? -1 : 1 )})
+        .skip((queryData.page - 1) * queryData.pageSize)
+        .limit(queryData.pageSize);
+
+    Promise.all([query, ParkingLot.find(filter).countDocuments()])
+        .then((results) => {
+            response.send({
+                data: results[0],
+                collectionSize: results[1]
+            });
+        }).catch((err) => {
+            console.log(err);
+            response.status(500).send();
+        });
 };
 
 const PARKING_LOT_GET_ID_API = (request, response) => {
