@@ -30,19 +30,23 @@ const PARKING_AREA_POST_API = (request, response) => {
 
 const PARKING_AREA_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
-    queryData.page = _.toInteger(queryData.page);
-    queryData.pageSize = _.toInteger(queryData.pageSize);
-
     var filter = {};
-    if (queryData.field && queryData.match) {
-        filter[queryData.field] = { $regex: "^" + queryData.match };
-    }
-
-    // Convert String to Object Property using []
-    const query = ParkingArea.find(filter)
+    var query;
+    if(queryData.page) {
+        queryData.page = _.toInteger(queryData.page);
+        queryData.pageSize = _.toInteger(queryData.pageSize);
+        
+        if (queryData.field && queryData.match) {
+            filter[queryData.field] = { $regex: "^" + queryData.match };
+        }
+        // Convert String to Object Property using []
+        query = ParkingArea.find(filter)
         .sort({ [queryData.order]: queryData.reverse })
         .skip((queryData.page - 1) * queryData.pageSize)
         .limit(queryData.pageSize);
+    } else {
+        query = ParkingArea.find(filter);
+    }
 
     Promise.all([query, ParkingArea.find(filter).countDocuments()])
         .then((results) => {
