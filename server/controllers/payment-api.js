@@ -77,11 +77,20 @@ const PAYMENT_GET_API = (request, response) => {
     if (queryData._contract) {
         filter._contract = queryData._contract;
     }
+    
     // Convert String to Object Property using []
     const query = Payment.find(filter)
         .sort({ [queryData.order]: queryData.reverse })
         .skip((queryData.page - 1) * queryData.pageSize)
-        .limit(queryData.pageSize);
+        .limit(queryData.pageSize).populate({
+            path: '_contract',
+            select: '_customer',
+            populate: {
+                path: '_customer',
+                select: 'pContact'
+            },
+            
+        });
 
     Promise.all([query, Payment.find(filter).countDocuments()])
         .then((results) => {
