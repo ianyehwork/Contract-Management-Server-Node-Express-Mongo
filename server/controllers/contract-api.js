@@ -88,12 +88,18 @@ const CONTRACT_GET_API = (request, response) => {
     var sortObj = {};
     if (queryData.order === 'pDate') {
         sortObj = {
-            pYear: (queryData.reverse ? 1 : -1 ),
-            pMonth: (queryData.reverse ? 1 : -1 ),
-            pDay: (queryData.reverse ? 1 : -1 )
+            pYear: queryData.reverse,
+            pMonth: queryData.reverse,
+            pDay: queryData.reverse
+        };
+    } else if (queryData.order === 'sDate') {
+        sortObj = {
+            sYear: queryData.reverse,
+            sMonth: queryData.reverse,
+            sDay: queryData.reverse
         };
     } else {
-        sortObj = { [queryData.order]: (queryData.reverse ? -1 : 1)}
+        sortObj = { [queryData.order]: queryData.reverse }
     }
 
     // Convert String to Object Property using []
