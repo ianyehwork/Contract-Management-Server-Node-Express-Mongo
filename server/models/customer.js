@@ -58,7 +58,7 @@ CustomerSchema.methods.toJSON = function(){
         'address'
     ]);
     obj.dateCreated = modelObject.dateCreated;
-    obj.dateModified = modelObject.dateCreated;
+    obj.dateModified = modelObject.dateModified;
     obj.vehicles = [];
     _.forEach(modelObject.vehicles, (v) => {
         obj.vehicles.push(v.vin);

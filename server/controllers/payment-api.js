@@ -79,7 +79,7 @@ const PAYMENT_GET_API = (request, response) => {
     }
     // Convert String to Object Property using []
     const query = Payment.find(filter)
-        .sort({ [queryData.order]: (queryData.reverse ? 1 : -1) })
+        .sort({ [queryData.order]: (queryData.reverse ? -1 : 1) })
         .skip((queryData.page - 1) * queryData.pageSize)
         .limit(queryData.pageSize);
 

@@ -93,7 +93,7 @@ const CONTRACT_GET_API = (request, response) => {
             pDay: (queryData.reverse ? 1 : -1 )
         };
     } else {
-        sortObj = { [queryData.order]: (queryData.reverse ? 1 : -1)}
+        sortObj = { [queryData.order]: (queryData.reverse ? -1 : 1)}
     }
 
     // Convert String to Object Property using []
