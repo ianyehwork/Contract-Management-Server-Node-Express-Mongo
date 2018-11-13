@@ -7,7 +7,8 @@ var { Contract } = require('./../models/contract');
 var { ParkingLot } = require('./../models/parking-lot');
 const { generateLocalDateTime } = require('./../util/utility');
 const url = require('url');
-const Transaction = require('mongoose-transactions')
+const Transaction = require('mongoose-transactions');
+var { Customer } = require('./../models/customer');
 
 const CONTRACT_POST_API = (request, response) => {
     var body = _.pick(request.body, [
@@ -78,10 +79,8 @@ const CONTRACT_GET_API = (request, response) => {
     // Filter
     var filter = {};
     if (queryData.field && queryData.match) {
-        filter[queryData.field] = { $regex: "^" + queryData.match };
-    }
-    if (queryData.active) {
-        filter.active = queryData.active;
+        // filter[queryData.field] = { $regex: "^" + queryData.match };
+        filter[queryData.field] = queryData.match;
     }
 
     // Sort
@@ -102,29 +101,61 @@ const CONTRACT_GET_API = (request, response) => {
         sortObj = { [queryData.order]: queryData.reverse }
     }
 
-    // Convert String to Object Property using []
-    const query = Contract.find(filter)
-        .sort(sortObj)
-        .skip((queryData.page - 1) * queryData.pageSize)
-        .limit(queryData.pageSize)
-        .populate({
-            path: '_customer',
-            select: 'pContact pPhone vehicles'
-        }).populate({
-            path: '_lot',
-            select: 'identifier deposit rent'
-        });
-
-    Promise.all([query, Contract.find(filter).countDocuments()])
-        .then((results) => {
-            response.send({
-                data: results[0],
-                collectionSize: results[1]
+    if (queryData.contactName) {
+        Customer.find({ pContact: { $regex: "^" + queryData.contactName } }, "_id").then((customers) => {
+            var ids = [];
+            customers.forEach((value) => {
+                ids.push(value);
             });
-        }).catch((err) => {
-            console.log(err);
-            response.status(500).send();
+            // Convert String to Object Property using []
+            filter['_customer'] = {$in: ids};
+            const query = Contract.find(filter)
+                .sort(sortObj)
+                .skip((queryData.page - 1) * queryData.pageSize)
+                .limit(queryData.pageSize)
+                .populate({
+                    path: '_customer',
+                    select: 'pContact pPhone vehicles'
+                }).populate({
+                    path: '_lot',
+                    select: 'identifier deposit rent'
+                });
+
+            Promise.all([query, Contract.find(filter).countDocuments()])
+                .then((results) => {
+                    response.send({
+                        data: results[0],
+                        collectionSize: results[1]
+                    });
+                }).catch((err) => {
+                    console.log(err);
+                    response.status(500).send();
+                });
         });
+    } else {
+        const query = Contract.find(filter)
+            .sort(sortObj)
+            .skip((queryData.page - 1) * queryData.pageSize)
+            .limit(queryData.pageSize)
+            .populate({
+                path: '_customer',
+                select: 'pContact pPhone vehicles'
+            }).populate({
+                path: '_lot',
+                select: 'identifier deposit rent'
+            });
+
+        Promise.all([query, Contract.find(filter).countDocuments()])
+            .then((results) => {
+                response.send({
+                    data: results[0],
+                    collectionSize: results[1]
+                });
+            }).catch((err) => {
+                console.log(err);
+                response.status(500).send();
+            });
+    }
 };
 
 const CONTRACT_GET_ID_API = (request, response) => {
