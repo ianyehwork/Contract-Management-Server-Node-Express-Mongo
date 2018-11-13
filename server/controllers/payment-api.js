@@ -8,7 +8,8 @@ var { Contract } = require('./../models/contract');
 const { generateLocalDateTime } = require('./../util/utility');
 const url = require('url');
 const moment = require('moment');
-const Transaction = require('mongoose-transactions')
+const Transaction = require('mongoose-transactions');
+var { Customer } = require('./../models/customer');
 
 const PAYMENT_POST_API = (request, response) => {
     var body = _.pick(request.body, [
@@ -40,7 +41,7 @@ const PAYMENT_POST_API = (request, response) => {
             doc.pYear = date.year();
             doc.pMonth = date.month() + 1;
             doc.pDay = date.date();
-        } 
+        }
 
         const transaction = new Transaction();
         try {
@@ -56,7 +57,7 @@ const PAYMENT_POST_API = (request, response) => {
         } catch (err) {
             console.error(err);
             transaction.rollback().catch(console.error);
-            response.status(500).send();  
+            response.status(500).send();
         }
 
     }, (err) => {
@@ -72,36 +73,78 @@ const PAYMENT_GET_API = (request, response) => {
 
     var filter = {};
     if (queryData.field && queryData.match) {
-        filter[queryData.field] = { $regex: "^" + queryData.match };
+        filter[queryData.field] = queryData.match;
     }
     if (queryData._contract) {
         filter._contract = queryData._contract;
     }
-    
-    // Convert String to Object Property using []
-    const query = Payment.find(filter)
-        .sort({ [queryData.order]: queryData.reverse })
-        .skip((queryData.page - 1) * queryData.pageSize)
-        .limit(queryData.pageSize).populate({
-            path: '_contract',
-            select: '_customer',
-            populate: {
-                path: '_customer',
-                select: 'pContact'
-            },
-            
+    // console.log(queryData);
+    if (queryData.contactName) {
+        Customer.find({ pContact: { $regex: "^" + queryData.contactName } }, "_id").then((customers) => {
+            var ids = [];
+            customers.forEach((value) => {
+                ids.push(value._id);
+            });
+            Contract.find({ '_customer': { $in: ids } }, "_id").then((contracts) => {
+                var cids = [];
+                contracts.forEach((value) => {
+                    cids.push(value._id);
+                });
+                filter['_contract'] = { $in: cids };
+                // Convert String to Object Property using []
+                const query = Payment.find(filter)
+                    .sort({ [queryData.order]: queryData.reverse })
+                    .skip((queryData.page - 1) * queryData.pageSize)
+                    .limit(queryData.pageSize).populate({
+                        path: '_contract',
+                        select: '_customer',
+                        populate: {
+                            path: '_customer',
+                            select: 'pContact'
+                        },
+
+                    });
+
+                Promise.all([query, Payment.find(filter).countDocuments()])
+                    .then((results) => {
+                        response.send({
+                            data: results[0],
+                            collectionSize: results[1]
+                        });
+                    }).catch((err) => {
+                        console.log(err);
+                        response.status(500).send();
+                    });
+            });
         });
 
-    Promise.all([query, Payment.find(filter).countDocuments()])
-        .then((results) => {
-            response.send({
-                data: results[0],
-                collectionSize: results[1]
+    } else {
+        // Convert String to Object Property using []
+        const query = Payment.find(filter)
+            .sort({ [queryData.order]: queryData.reverse })
+            .skip((queryData.page - 1) * queryData.pageSize)
+            .limit(queryData.pageSize).populate({
+                path: '_contract',
+                select: '_customer',
+                populate: {
+                    path: '_customer',
+                    select: 'pContact'
+                },
+
             });
-        }).catch((err) => {
-            console.log(err);
-            response.status(500).send();
-        });
+
+        Promise.all([query, Payment.find(filter).countDocuments()])
+            .then((results) => {
+                response.send({
+                    data: results[0],
+                    collectionSize: results[1]
+                });
+            }).catch((err) => {
+                console.log(err);
+                response.status(500).send();
+            });
+    }
+
 };
 
 const PAYMENT_GET_ID_API = (request, response) => {
@@ -154,7 +197,7 @@ const PAYMENT_PATCH_API = (request, response) => {
                 path: '_lot',
                 select: 'rent'
             }).then(function (doc) {
-                if(orig.type == 'R') {
+                if (orig.type == 'R') {
                     doc.pTotal = doc.pTotal - orig.amount + body.amount;
                 } else {
                     doc.pTotal = doc.pTotal + orig.amount - body.amount;
@@ -170,7 +213,7 @@ const PAYMENT_PATCH_API = (request, response) => {
                 orig.comment = body.comment;
                 orig.amount = body.amount;
                 orig.dateModified = generateLocalDateTime();
-                
+
                 const transaction = new Transaction();
                 try {
                     transaction.update('Payment', orig._id, orig, { new: true });
@@ -185,7 +228,7 @@ const PAYMENT_PATCH_API = (request, response) => {
                 } catch (err) {
                     console.error(err);
                     transaction.rollback().catch(console.error);
-                    response.status(500).send();  
+                    response.status(500).send();
                 }
             }, (err) => {
                 response.status(400).send(err);

@@ -79,8 +79,10 @@ const CONTRACT_GET_API = (request, response) => {
     // Filter
     var filter = {};
     if (queryData.field && queryData.match) {
-        // filter[queryData.field] = { $regex: "^" + queryData.match };
         filter[queryData.field] = queryData.match;
+    }
+    if (queryData.active) {
+        filter.active = queryData.active;
     }
 
     // Sort
@@ -105,7 +107,7 @@ const CONTRACT_GET_API = (request, response) => {
         Customer.find({ pContact: { $regex: "^" + queryData.contactName } }, "_id").then((customers) => {
             var ids = [];
             customers.forEach((value) => {
-                ids.push(value);
+                ids.push(value._id);
             });
             // Convert String to Object Property using []
             filter['_customer'] = {$in: ids};
