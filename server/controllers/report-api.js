@@ -1,9 +1,15 @@
 var { getTablePDFDocument } = require('./../reports/table-template');
 var { Contract } = require('./../models/contract');
+const url = require('url');
 
 const REPORT_PAYMENT_GET_API = (request, response) => {
-
-    Contract.find({ active: true }).populate({
+    var queryData = url.parse(request.url, true).query;
+    var filter = {active: true};
+    if(queryData.paymentYear) {
+        filter.pYear = queryData.paymentYear;
+        filter.pMonth = queryData.paymentMonth;
+    }
+    Contract.find(filter).populate({
         path: '_customer',
         select: 'pContact pPhone'
     }).populate({
