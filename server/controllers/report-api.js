@@ -3,15 +3,18 @@ var { Contract } = require('./../models/contract');
 var { Payment } = require('./../models/payment');
 const url = require('url');
 const moment = require('moment');
+const _ = require('lodash');
 
 const REPORT_INCOME_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
+
     var filter = {};
     if(queryData.sy) {
-        var startDate = new Date(queryData.sy, queryData.sm, queryData.sd);
-        var endDate = new Date(queryData.ey, queryData.em, queryData.ed);
+        var startDate = new Date(_.toInteger(queryData.sy), _.toInteger(queryData.sm - 1), _.toInteger(queryData.sd) + 1,0,0,0,0);
+        var endDate = new Date(_.toInteger(queryData.ey), _.toInteger(queryData.em - 1), _.toInteger(queryData.ed) + 1,0,0,0,0);
         filter.dateCreated = {"$gte": startDate, "$lt": endDate};
     }
+
     Payment.find(filter).populate({
         path: '_contract',
         select: '_customer',
@@ -24,7 +27,7 @@ const REPORT_INCOME_GET_API = (request, response) => {
         for (i = 0; i < payments.length; i++) {
             var data = [];
             var date = moment(payments[i].dateCreated);
-            data.push(date.year() + '/' + date.month() + "/" + date.date());
+            data.push(date.year() + '/' + (date.month() + 1) + "/" + date.date());
             data.push(payments[i]._contract._customer.pContact);
             data.push(payments[i].type);
             data.push(payments[i].amount);
