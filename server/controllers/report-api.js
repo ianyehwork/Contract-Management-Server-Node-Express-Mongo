@@ -1,6 +1,55 @@
 var { getTablePDFDocument } = require('./../reports/table-template');
 var { Contract } = require('./../models/contract');
+var { Payment } = require('./../models/payment');
 const url = require('url');
+const moment = require('moment');
+
+const REPORT_INCOME_GET_API = (request, response) => {
+    var queryData = url.parse(request.url, true).query;
+    var filter = {};
+    if(queryData.sy) {
+        var startDate = new Date(queryData.sy, queryData.sm, queryData.sd);
+        var endDate = new Date(queryData.ey, queryData.em, queryData.ed);
+        filter.dateCreated = {"$gte": startDate, "$lt": endDate};
+    }
+    Payment.find(filter).populate({
+        path: '_contract',
+        select: '_customer',
+        populate: {
+            path: '_customer',
+            select: 'pContact'
+        }
+    }).then((payments) => {
+        var rows = [];
+        for (i = 0; i < payments.length; i++) {
+            var data = [];
+            var date = moment(payments[i].dateCreated);
+            data.push(date.year() + '/' + date.month() + "/" + date.date());
+            data.push(payments[i]._contract._customer.pContact);
+            data.push(payments[i].type);
+            data.push(payments[i].amount);
+            rows.push(data);
+        }
+        var headers = [{ text: '日期' }, { text: '付款人' }, { text: '種類' }, { text: '金額' }];
+        var doc = getTablePDFDocument('收款明細', headers, rows);
+        let chunks = [];
+
+        doc.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+
+        doc.on('end', () => {
+            const result = Buffer.concat(chunks);
+            response.setHeader('Content-Type', 'application/pdf');
+            response.send(result); // Buffer data
+        });
+
+        doc.end();
+
+    }, (err) => {
+        response.status(400).send(err);
+    });
+}
 
 const REPORT_PAYMENT_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
@@ -35,7 +84,7 @@ const REPORT_PAYMENT_GET_API = (request, response) => {
             rows.push(data);
         }
         var headers = [{ text: '停車位' }, { text: '聯絡人' }, { text: '電話' }, { text: '付款日期' }, { text: '金額' }, { text: '備註' }];
-        var doc = getTablePDFDocument(headers, rows);
+        var doc = getTablePDFDocument('付款清單', headers, rows);
         let chunks = [];
 
         doc.on('data', (chunk) => {
@@ -57,5 +106,6 @@ const REPORT_PAYMENT_GET_API = (request, response) => {
 };
 
 module.exports = {
-    REPORT_PAYMENT_GET_API
+    REPORT_PAYMENT_GET_API,
+    REPORT_INCOME_GET_API
 };

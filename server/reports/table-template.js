@@ -17,12 +17,13 @@ const fonts = {
     }
 };
 
-const getTablePDFDocument = (headers, rows) => {
+const getTablePDFDocument = (title, headers, rows) => {
 
     var printer = new PdfPrinter(fonts);
-
+    var widthsArray = [];
     headers.forEach((element, index) => {
         headers[index]['style'] = 'tableHeader';
+        widthsArray.push('*');
     });
 
     var data = [ headers ];
@@ -33,11 +34,11 @@ const getTablePDFDocument = (headers, rows) => {
 
     var docDefinition = {
         content: [
-            { text: '付款清單', style: 'header'},
+            { text: title, style: 'header'},
             {
                 style: 'tableExample',
                 table: {
-                    widths: ['*', '*', '*', '*', '*', '*'],
+                    widths: widthsArray,
                     headerRows: 1,
                     body: data
                 },
