@@ -46,11 +46,12 @@ const PARKING_LOT_GET_API = (request, response) => {
         .skip((queryData.page - 1) * queryData.pageSize)
         .limit(queryData.pageSize);
 
-    Promise.all([query, ParkingLot.find(filter).countDocuments()])
+    Promise.all([query, ParkingLot.find(filter).countDocuments(), ParkingLot.find({status: true, _area: queryData._area}).countDocuments()])
         .then((results) => {
             response.send({
                 data: results[0],
-                collectionSize: results[1]
+                collectionSize: results[1],
+                availableSize: results[2]
             });
         }).catch((err) => {
             console.log(err);
