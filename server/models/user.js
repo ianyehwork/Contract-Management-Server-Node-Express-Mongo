@@ -84,7 +84,8 @@ UserSchema.methods.generateAuthToken = function() {
     var user = this;
     var access = 'auth';
     var token = jwt.sign({
-        _id: user._id.toHexString(),
+        // _id: user._id.toHexString(),
+        username: user.username,
         role: user.role,
         access,
         exp: Math.floor(Date.now() / 1000) + _.toInteger(process.env.AUTH_TOKEN_TTL_SECOND)
