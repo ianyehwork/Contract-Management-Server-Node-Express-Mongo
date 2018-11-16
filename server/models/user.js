@@ -56,7 +56,6 @@ var UserSchema = new mongoose.Schema({
         required: true,
         trim: true,
         minlength: 1,
-        unique: true,
         validate: {
             isAsync: true,
             validator: validator.isEmail,

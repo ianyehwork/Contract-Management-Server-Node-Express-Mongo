@@ -97,12 +97,11 @@ const PAYMENT_GET_API = (request, response) => {
                     .skip((queryData.page - 1) * queryData.pageSize)
                     .limit(queryData.pageSize).populate({
                         path: '_contract',
-                        select: '_customer',
+                        select: '_customer _lot',
                         populate: {
-                            path: '_customer',
-                            select: 'pContact'
-                        },
-
+                            path: '_customer _lot',
+                            select: 'pContact identifier'
+                        }
                     });
 
                 Promise.all([query, Payment.find(filter).countDocuments()])
@@ -125,12 +124,11 @@ const PAYMENT_GET_API = (request, response) => {
             .skip((queryData.page - 1) * queryData.pageSize)
             .limit(queryData.pageSize).populate({
                 path: '_contract',
-                select: '_customer',
+                select: '_customer _lot',
                 populate: {
-                    path: '_customer',
-                    select: 'pContact'
-                },
-
+                    path: '_customer _lot',
+                    select: 'pContact identifier'
+                }
             });
 
         Promise.all([query, Payment.find(filter).countDocuments()])
