@@ -15,7 +15,7 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const {ObjectID} = require('mongodb');
-const {UserAuth} = require('./user_auth');
+const {UserAuth} = require('./user-auth');
 const bcrypt = require('bcryptjs');
 
 const UserSchemaConst = {

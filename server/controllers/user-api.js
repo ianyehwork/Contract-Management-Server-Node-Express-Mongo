@@ -10,6 +10,8 @@ const { PasswordToken } = require('./../models/password-token');
 const { LoginToken } = require('./../models/login-token');
 const { generateRandomToken } = require('./../util/utility');
 const { sendPasswordResetEmail, sendLoginTokenEmail } = require('./../email/email-service');
+const { CustomerToken } = require('./../models/customer-token');
+const { Customer } = require('./../models/customer');
 const bcrypt = require('bcryptjs');
 
 /**
@@ -205,10 +207,53 @@ const PASSWORD_RESET_POST_API = (request, response) => {
     }
 };
 
+/**
+ * Generate the customer token if not already exist
+ * @param {*} request 
+ * @param {*} response 
+ */
+const CUSTOMER_TOKEN_POST_API = (request, response) => {
+    var body = _.pick(request.body, ['_id']);
+    Customer.findOne({ _id: body._id }).then((customer) => {
+        if (customer) {
+            CustomerToken.findOne({ _customer: customer._id }).then((ctoken) => {
+                if (ctoken) {
+                    response.send(ctoken);
+                } else {
+                    var customerToken = new CustomerToken();
+                    customerToken._customer = customer._id;
+                    customerToken.token = generateRandomToken(6);
+                    customerToken.save().then((token) => {
+                        response.send(token);
+                    }).catch((err) => {
+                        response.status(500).send(err);
+                    });
+                }
+            });
+        } else {
+            response.status(404).send();
+        }
+    }).catch((err) => {
+        response.status(400).send(err);
+    });
+};
+
+/**
+ * Delete the customer token after the user is associated with
+ * the customer identified by the token
+ * @param {*} request 
+ * @param {*} response 
+ */
+const CUSTOMER_TOKEN_DELETE_API = (request, response) => {
+    response.status(500).send({ reason: "Not Implemented..." });
+};
+
 module.exports = {
     USER_CREATE_POST_API,
     USER_ME_GET_API,
     USER_LOGIN_POST_API,
     USER_LOGOUT_DELETE_API,
-    PASSWORD_RESET_POST_API
+    PASSWORD_RESET_POST_API,
+    CUSTOMER_TOKEN_POST_API,
+    CUSTOMER_TOKEN_DELETE_API
 };
