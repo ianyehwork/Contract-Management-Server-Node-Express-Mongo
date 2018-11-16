@@ -23,10 +23,15 @@ const REPORT_INCOME_GET_API = (request, response) => {
             select: 'pContact'
         }
     }).then((payments) => {
+        payments.sort((a, b) => {
+            return b.dateCreated - a.dateCreated;
+        });
         var rows = [];
         for (i = 0; i < payments.length; i++) {
             var data = [];
             var date = moment(payments[i].dateCreated);
+            // Convert to Taiwan Local Time
+            date.set('hour', date.hour() - 8);
             data.push(date.year() + '/' + (date.month() + 1) + "/" + date.date());
             data.push(payments[i]._contract._customer.pContact);
             data.push(payments[i].type);
