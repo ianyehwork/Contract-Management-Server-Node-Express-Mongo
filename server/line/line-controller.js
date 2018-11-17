@@ -32,16 +32,16 @@ const processLineMessage = (data) => {
         data['sourceType'] === 'user' &&
         data['messageType'] === 'text') {
         if(data['messageText'] === '*1') {
-            Customer.find({lineUID: data['sourceUserId']}).then((user) => {
-                if(user) {
-                    sendMessage(data['replyToken'], '身份已驗證! 您的身份是: ' + user.pContact + '.');
+            Customer.findOne({lineUID: data['sourceUserId']}).then((customer) => {
+                if(customer) {
+                    sendMessage(data['replyToken'], '身份已驗證! 您的身份是: ' + customer.pContact + '.0x100033');
                 } else {
                     console.log('Here AAA!');
-                    sendMessage(data['replyToken'], '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.\n例如: A82JuL*');
+                    sendMessage(data['replyToken'], '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL* 0x10007A');
                 }
             }).catch((err) => {
                 console.log('Here BBB!');
-                sendMessage(data['replyToken'], '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.\n例如: A82JuL*');
+                sendMessage(data['replyToken'], '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL* 0x10007A');
             });
         } else if(data['messageText'] === '*2') {
             
