@@ -41,7 +41,7 @@ const processLineMessage = (data) => {
         if (data['messageText'] === '*1') {
             Customer.findOne({ lineUID: data['sourceUserId'] }).then((customer) => {
                 if (customer) {
-                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '."\x10007A"');
+                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.\x10007A');
                 } else {
                     sendMessage(replyTokenValue, IDENTITY_NOT_VERIFIED);
                 }
@@ -51,7 +51,7 @@ const processLineMessage = (data) => {
         } else if (_.toString(data['messageText']).match(/^[0-9a-zA-z]{6}\*/).length > 0) {
             Customer.findOne({ lineUID: data['sourceUserId'] }).then((customer) => {
                 if (customer) {
-                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '."\0x10007A"');
+                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.\0x10007A');
                 } else {
                     CustomerToken.findOne({ token: _.toString(data['messageText']).substr(0, 6) }).then((token) => {
                         if (token) {
