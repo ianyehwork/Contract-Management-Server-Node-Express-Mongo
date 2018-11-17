@@ -7,6 +7,7 @@ const ParkingLotRoutes = require('./parking-lot-routes');
 const ContractRoutes = require('./contract-routes');
 const PaymentRoutes = require('./payment-routes');
 const ReportRoutes = require('./report-routes');
+const LineRoutes = require('./line-routes');
 
 module.exports = (app) => {
     // App Routes Definition
@@ -18,4 +19,5 @@ module.exports = (app) => {
     ContractRoutes(app);
     PaymentRoutes(app);
     ReportRoutes(app);
+    LineRoutes(app);
 }
