@@ -50,7 +50,13 @@ const processLineMessage = (data) => {
                             sendMessage(data['replyToken'], '身份已驗證! 您的身份是: ' + customer.pContact + '.');
                             customer.lineUID = data['sourceUserId'];
                             customer.save();
-                            CustomerToken.deleteOne({token: _.toString(data['messageText']).substr(0, 6)});
+                            CustomerToken.deleteOne({token: _.toString(data['messageText']).substr(0, 6)}).then((token) => {
+                                if(token) {
+                                    console.log('Token deleted.');
+                                }
+                            }).catch((err) => {
+                                console.log('Unable to delete token.');
+                            });
                         } else {
                             sendMessage(data['replyToken'], '驗證碼不存在! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL*');
                         }
