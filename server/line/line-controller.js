@@ -7,9 +7,9 @@ const { CustomerToken } = require('./../models/customer-token');
 const client = new line.Client({
     channelAccessToken: 'EfqyA+FjGoRyGTEOB0eNHaJH5fCXZzrC6JsU0KO4jVrhqD3P5ssShCKafU2Msbjf6JmyIJif1PZzgvSNP8dWm8dqOVT6J/adoT+If/I1DWqUHU+UTQ9bH1PDfyi4ZIEIHrs36ATXd00L0DOXf4WJmwdB04t89/1O/w1cDnyilFU='
 });
-const PLEASE_EMOJI = 0x10007A;
-const HAPPY_EMOJI = 0x100090;
-const IDENTITY_NOT_VERIFIED = '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.' + String.fromCharCode(PLEASE_EMOJI) +' 例如: A82JuL*';
+const PLEASE_EMOJI = '\u{10007A}';
+const HAPPY_EMOJI = '\u{100090}';
+const IDENTITY_NOT_VERIFIED = '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.' + PLEASE_EMOJI +' 例如: A82JuL*';
 const IDENTITY_VERIFIED = '身份已驗證! 您的身份是: ';
 const SYSTEM_ERROR = '系統錯誤! 請通知管理員, 謝謝!';
 const CUSTOMER_TOKEN_NOT_EXISTS = '驗證碼不存在! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL*';
@@ -43,7 +43,7 @@ const processLineMessage = (data) => {
         if (data['messageText'] === '*1') {
             Customer.findOne({ lineUID: data['sourceUserId'] }).then((customer) => {
                 if (customer) {
-                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.' + String.fromCharCode(HAPPY_EMOJI));
+                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.' + HAPPY_EMOJI);
                 } else {
                     sendMessage(replyTokenValue, IDENTITY_NOT_VERIFIED);
                 }
