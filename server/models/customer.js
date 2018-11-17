@@ -43,6 +43,9 @@ const CustomerSchema = new mongoose.Schema({
     dateModified: {
         type: Date,
         default: Date.now
+    },
+    lineUID: {
+        type: String
     }
 });
 

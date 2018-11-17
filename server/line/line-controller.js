@@ -1,15 +1,11 @@
 const crypto = require('crypto');
 const _ = require('lodash');
 const line = require('@line/bot-sdk');
+var { Customer } = require('./../models/customer');
 
 const client = new line.Client({
     channelAccessToken: 'EfqyA+FjGoRyGTEOB0eNHaJH5fCXZzrC6JsU0KO4jVrhqD3P5ssShCKafU2Msbjf6JmyIJif1PZzgvSNP8dWm8dqOVT6J/adoT+If/I1DWqUHU+UTQ9bH1PDfyi4ZIEIHrs36ATXd00L0DOXf4WJmwdB04t89/1O/w1cDnyilFU='
 });
-
-// const message = {
-//     type: 'text',
-//     text: 'Hello World!'
-// };
 
 /**
  * The signature in the X-Line-Signature request header must be
@@ -35,25 +31,40 @@ const processLineMessage = (data) => {
     if (data['type'] === 'message' &&
         data['sourceType'] === 'user' &&
         data['messageType'] === 'text') {
-        const message = {
-            type: 'text',
-            text: data['messageText']
-        };
-        console.log(data['sourceUserId'] + ":" + data['messageText']);
-        sendMessage(data['replyToken'], message);
+        if(data['messageText'] === '*1') {
+            Customer.find({lineUID: data['sourceUserId']}).then((user) => {
+                if(user) {
+                    sendMessage(data['replyToken'], '身份已驗證! 您的身份是: ' + user.pContact + '.');
+                } else {
+                    console.log('Here AAA!');
+                    sendMessage(data['replyToken'], '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.\n例如: A82JuL*');
+                }
+            }).catch((err) => {
+                console.log('Here BBB!');
+                sendMessage(data['replyToken'], '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.\n例如: A82JuL*');
+            });
+        } else if(data['messageText'] === '*2') {
+            
+        }
+        // console.log(data['sourceUserId'] + ":" + data['messageText']);
+        // sendMessage(data['replyToken'], message);
+    } else {
+        sendMessage(data['replyToken'], '指令無法識別!');
     }
 }
 
 const sendMessage = (replyToken, message) => {
-    client.replyMessage(replyToken, message)
-        .then(() => {
-            // Log the message?
-            console.log('Success!');
-        })
-        .catch((err) => {
-            // error handling
-            console.log(err);
-        });
+    client.replyMessage(replyToken, {
+        type: 'text',
+        text: message
+    }).then(() => {
+        // Log the message?
+        console.log('Success!');
+    }).catch((err) => {
+        // error handling
+        console.log(err);
+    });
+
 }
 
 module.exports = {
