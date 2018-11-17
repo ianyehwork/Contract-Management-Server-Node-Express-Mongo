@@ -1,5 +1,15 @@
 const crypto = require('crypto');
 const _ = require('lodash');
+const line = require('@line/bot-sdk');
+
+const client = new line.Client({
+    channelAccessToken: 'EfqyA+FjGoRyGTEOB0eNHaJH5fCXZzrC6JsU0KO4jVrhqD3P5ssShCKafU2Msbjf6JmyIJif1PZzgvSNP8dWm8dqOVT6J/adoT+If/I1DWqUHU+UTQ9bH1PDfyi4ZIEIHrs36ATXd00L0DOXf4WJmwdB04t89/1O/w1cDnyilFU='
+});
+
+const message = {
+    type: 'text',
+    text: 'Hello World!'
+};
 
 /**
  * The signature in the X-Line-Signature request header must be
@@ -21,9 +31,28 @@ const isSignatureValid = (headerSignature, requestBody) => {
 const WEBHOOK_POST_API = (request, response) => {
     console.log('request.headers');
     console.log(request.headers);
-    console.log(isSignatureValid(request.headers['x-line-signature'], request.body) ? 'Valid Signature' : "Invalid Signature")
     console.log('request.body');
     console.log(request.body);
+    if (isSignatureValid(request.headers['x-line-signature'], request.body)) {
+        // Process the incoming messages
+        _.forEach(request.body['events'], function (value) {
+            console.log(value['replyToken']);
+            console.log(value['type']);
+            console.log(value['source']['type'] + ":" + value['source']['userId']);
+            console.log(value['message']['type'] + ":" + value['message']['text']);
+            client.replyMessage(value['replyToken'], message)
+                .then(() => {
+                    console.log('Success!');
+                })
+                .catch((err) => {
+                    // error handling
+                    console.log(err);
+                });
+        });
+
+    } else {
+        console.log('Invalid Signature!');
+    }
     return response.send();
 };
 
