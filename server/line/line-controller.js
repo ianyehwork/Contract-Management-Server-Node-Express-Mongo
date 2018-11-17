@@ -7,11 +7,13 @@ const { CustomerToken } = require('./../models/customer-token');
 const client = new line.Client({
     channelAccessToken: 'EfqyA+FjGoRyGTEOB0eNHaJH5fCXZzrC6JsU0KO4jVrhqD3P5ssShCKafU2Msbjf6JmyIJif1PZzgvSNP8dWm8dqOVT6J/adoT+If/I1DWqUHU+UTQ9bH1PDfyi4ZIEIHrs36ATXd00L0DOXf4WJmwdB04t89/1O/w1cDnyilFU='
 });
-const IDENTITY_NOT_VERIFIED = '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.\0x10007A 例如: A82JuL*';
+const IDENTITY_NOT_VERIFIED = '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾.' + String.fromCharCode(PLEASE_EMOJI) +' 例如: A82JuL*';
 const IDENTITY_VERIFIED = '身份已驗證! 您的身份是: ';
 const SYSTEM_ERROR = '系統錯誤! 請通知管理員, 謝謝!';
 const CUSTOMER_TOKEN_NOT_EXISTS = '驗證碼不存在! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL*';
 const COMMAND_NOT_FOUND = '指令無法識別!';
+const PLEASE_EMOJI = 0x10007A;
+const HAPPY_EMOJI = 0x100090;
 
 /**
  * The signature in the X-Line-Signature request header must be
@@ -41,7 +43,7 @@ const processLineMessage = (data) => {
         if (data['messageText'] === '*1') {
             Customer.findOne({ lineUID: data['sourceUserId'] }).then((customer) => {
                 if (customer) {
-                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.\x10007A');
+                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.' + String.fromCharCode(HAPPY_EMOJI));
                 } else {
                     sendMessage(replyTokenValue, IDENTITY_NOT_VERIFIED);
                 }
@@ -51,7 +53,7 @@ const processLineMessage = (data) => {
         } else if (_.toString(data['messageText']).match(/^[0-9a-zA-z]{6}\*/).length > 0) {
             Customer.findOne({ lineUID: data['sourceUserId'] }).then((customer) => {
                 if (customer) {
-                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.\0x10007A');
+                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.' + String.fromCharCode(HAPPY_EMOJI));
                 } else {
                     CustomerToken.findOne({ token: _.toString(data['messageText']).substr(0, 6) }).then((token) => {
                         if (token) {
