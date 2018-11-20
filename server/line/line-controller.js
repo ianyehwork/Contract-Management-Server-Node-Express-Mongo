@@ -53,7 +53,7 @@ const processLineMessage = (data) => {
         } else if (_.toString(data['messageText']).match(/^[0-9a-zA-z]{6}\*/).length > 0) {
             Customer.findOne({ lineUID: data['sourceUserId'] }).then((customer) => {
                 if (customer) {
-                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.' + String.fromCharCode(HAPPY_EMOJI));
+                    sendMessage(replyTokenValue, IDENTITY_VERIFIED + customer.pContact + '.' + HAPPY_EMOJI);
                 } else {
                     CustomerToken.findOne({ token: _.toString(data['messageText']).substr(0, 6) }).then((token) => {
                         if (token) {

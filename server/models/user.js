@@ -26,7 +26,7 @@ const UserSchemaConst = {
     ROLE: 'role',
     ROLE_VALUES : {
         DEFAULT: 'default',
-        PUBLISHER: 'publisher',
+        ROOT: 'root',
         ADMIN: 'admin',
     }
 };
@@ -38,7 +38,7 @@ const UserSchemaConst = {
 function role_validator(value) {
     return validator.isIn(value, [
         UserSchemaConst.ROLE_VALUES.DEFAULT, 
-        UserSchemaConst.ROLE_VALUES.PUBLISHER, 
+        UserSchemaConst.ROLE_VALUES.ROOT, 
         UserSchemaConst.ROLE_VALUES.ADMIN]
     );
 }
