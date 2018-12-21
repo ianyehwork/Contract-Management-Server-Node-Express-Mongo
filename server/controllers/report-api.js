@@ -8,11 +8,14 @@ const _ = require('lodash');
 const REPORT_INCOME_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
 
+    var title = '已收款清單';
+    var subtitle = '';
     var filter = {};
     if(queryData.sy) {
         var startDate = new Date(_.toInteger(queryData.sy), _.toInteger(queryData.sm - 1), _.toInteger(queryData.sd) + 1,0,0,0,0);
         var endDate = new Date(_.toInteger(queryData.ey), _.toInteger(queryData.em - 1), _.toInteger(queryData.ed) + 1,0,0,0,0);
         filter.dateCreated = {"$gte": startDate, "$lt": endDate};
+        subtitle = queryData.sy + '/' + queryData.sm + '/' + queryData.sd + ' 至 ' + queryData.ey + '/' + queryData.em + '/' + queryData.ed;
     }
 
     Payment.find(filter).populate({
@@ -21,6 +24,13 @@ const REPORT_INCOME_GET_API = (request, response) => {
         populate: {
             path: '_customer',
             select: 'pContact'
+        }
+    }).populate({
+        path: '_contract',
+        select: '_lot',
+        populate: {
+            path: '_lot',
+            select: 'identifier'
         }
     }).then((payments) => {
         payments.sort((a, b) => {
@@ -34,12 +44,13 @@ const REPORT_INCOME_GET_API = (request, response) => {
             date.set('hour', date.hour() - 8);
             data.push(date.year() + '/' + (date.month() + 1) + "/" + date.date());
             data.push(payments[i]._contract._customer.pContact);
-            data.push(payments[i].type);
+            data.push(payments[i]._contract._lot.identifier);
+            data.push((payments[i].type === 'D') ? '押金' : (payments[i].type === 'RF') ? '退款' : '租金');
             data.push(payments[i].amount);
             rows.push(data);
         }
-        var headers = [{ text: '日期' }, { text: '付款人' }, { text: '種類' }, { text: '金額' }];
-        var doc = getTablePDFDocument('收款明細', headers, rows);
+        var headers = [{ text: '日期' }, { text: '付款人' }, { text: '停車位' }, { text: '種類' }, { text: '金額' }];
+        var doc = getTablePDFDocument(title, subtitle, headers, rows);
         let chunks = [];
 
         doc.on('data', (chunk) => {
@@ -61,10 +72,14 @@ const REPORT_INCOME_GET_API = (request, response) => {
 
 const REPORT_PAYMENT_GET_API = (request, response) => {
     var queryData = url.parse(request.url, true).query;
+
+    var title = '應付款清單';
+    var subtitle = '所有項目';
     var filter = {active: true};
     if(queryData.paymentYear) {
         filter.pYear = queryData.paymentYear;
         filter.pMonth = queryData.paymentMonth;
+        subtitle = queryData.paymentYear + '年' + queryData.paymentMonth + '月';
     }
     Contract.find(filter).populate({
         path: '_customer',
@@ -91,8 +106,8 @@ const REPORT_PAYMENT_GET_API = (request, response) => {
             data.push('');
             rows.push(data);
         }
-        var headers = [{ text: '停車位' }, { text: '聯絡人' }, { text: '電話' }, { text: '付款日期' }, { text: '金額' }, { text: '備註' }];
-        var doc = getTablePDFDocument('付款清單', headers, rows);
+        var headers = [{ text: '停車位' }, { text: '聯絡人' }, { text: '電話' }, { text: '日期' }, { text: '金額' }, { text: '備註' }];
+        var doc = getTablePDFDocument(title, subtitle, headers, rows);
         let chunks = [];
 
         doc.on('data', (chunk) => {

@@ -17,7 +17,7 @@ const fonts = {
     }
 };
 
-const getTablePDFDocument = (title, headers, rows) => {
+const getTablePDFDocument = (title, subtitle, headers, rows) => {
 
     var printer = new PdfPrinter(fonts);
     var widthsArray = [];
@@ -35,6 +35,7 @@ const getTablePDFDocument = (title, headers, rows) => {
     var docDefinition = {
         content: [
             { text: title, style: 'header'},
+            { text: subtitle, style: 'subheader'},
             {
                 style: 'tableExample',
                 table: {
@@ -54,19 +55,19 @@ const getTablePDFDocument = (title, headers, rows) => {
             header: {
                 fontSize: 18,
                 bold: true,
-                margin: [0, 0, 0, 10]
+                margin: [0, 0, 0, 5]
             },
             subheader: {
-                fontSize: 16,
+                fontSize: 13,
                 bold: true,
-                margin: [0, 10, 0, 5]
+                margin: [0, 0, 0, 5]
             },
             tableExample: {
-                margin: [0, 5, 0, 15]
+                margin: [0, 0, 0, 10]
             },
             tableHeader: {
                 bold: true,
-                fontSize: 13,
+                fontSize: 12,
                 color: 'black'
             }
         },
