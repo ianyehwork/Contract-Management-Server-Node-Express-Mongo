@@ -147,62 +147,6 @@ const CONTRACT_GET_API = (request, response) => {
             console.log(err);
             response.status(500).send();
         });
-
-    // if (queryData.contactName) {
-    //     Customer.find({ pContact: { $regex: "^" + queryData.contactName } }, "_id").then((customers) => {
-    //         var ids = [];
-    //         customers.forEach((value) => {
-    //             ids.push(value._id);
-    //         });
-    //         // Convert String to Object Property using []
-    //         filter['_customer'] = {$in: ids};
-    //         const query = Contract.find(filter)
-    //             .sort(sortObj)
-    //             .skip((queryData.page - 1) * queryData.pageSize)
-    //             .limit(queryData.pageSize)
-    //             .populate({
-    //                 path: '_customer',
-    //                 select: 'pContact pPhone vehicles'
-    //             }).populate({
-    //                 path: '_lot',
-    //                 select: 'identifier deposit rent'
-    //             });
-
-    //         Promise.all([query, Contract.find(filter).countDocuments()])
-    //             .then((results) => {
-    //                 response.send({
-    //                     data: results[0],
-    //                     collectionSize: results[1]
-    //                 });
-    //             }).catch((err) => {
-    //                 console.log(err);
-    //                 response.status(500).send();
-    //             });
-    //     });
-    // } else {
-    //     const query = Contract.find(filter)
-    //         .sort(sortObj)
-    //         .skip((queryData.page - 1) * queryData.pageSize)
-    //         .limit(queryData.pageSize)
-    //         .populate({
-    //             path: '_customer',
-    //             select: 'pContact pPhone vehicles'
-    //         }).populate({
-    //             path: '_lot',
-    //             select: 'identifier deposit rent'
-    //         });
-
-    //     Promise.all([query, Contract.find(filter).countDocuments()])
-    //         .then((results) => {
-    //             response.send({
-    //                 data: results[0],
-    //                 collectionSize: results[1]
-    //             });
-    //         }).catch((err) => {
-    //             console.log(err);
-    //             response.status(500).send();
-    //         });
-    // }
 };
 
 const CONTRACT_GET_ID_API = (request, response) => {
