@@ -18,7 +18,6 @@ const PAYMENT_POST_API = (request, response) => {
         'amount',
         'comment'
     ]);
-
     Contract.findOne({ _id: body._contract }).populate({
         path: '_lot',
         select: 'rent'

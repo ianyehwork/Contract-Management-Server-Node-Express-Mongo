@@ -45,7 +45,7 @@ const REPORT_INCOME_GET_API = (request, response) => {
             data.push(date.year() + '/' + (date.month() + 1) + "/" + date.date());
             data.push(payments[i]._contract._customer.pContact);
             data.push(payments[i]._contract._lot.identifier);
-            data.push((payments[i].type === 'D') ? '押金' : (payments[i].type === 'RF') ? '退款' : '租金');
+            data.push((payments[i].type === 'D') ? '押金' : (payments[i].type === 'RF') ? '退款' : (payments[i].type === 'R') ? '租金' : '退租金');
             data.push(payments[i].amount);
             rows.push(data);
         }
