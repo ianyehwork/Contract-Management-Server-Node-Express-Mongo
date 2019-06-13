@@ -18,6 +18,7 @@ const PAYMENT_POST_API = (request, response) => {
         'amount',
         'comment'
     ]);
+
     Contract.findOne({ _id: body._contract }).populate({
         path: '_lot',
         select: 'rent'
@@ -27,7 +28,7 @@ const PAYMENT_POST_API = (request, response) => {
         model.dateCreated = generateLocalDateTime();
         model.dateModified = generateLocalDateTime();
 
-        if (model.type !== 'D') {
+        if (model.type !== 'D' && model.type !== 'RD') {
             if (model.type === 'R') {
                 doc.pTotal = doc.pTotal + model.amount;
             } else {
@@ -77,7 +78,7 @@ const PAYMENT_GET_API = (request, response) => {
     if (queryData._contract) {
         filter._contract = queryData._contract;
     }
-    // console.log(queryData);
+
     if (queryData.contactName) {
         Customer.find({ pContact: { $regex: "^" + queryData.contactName } }, "_id").then((customers) => {
             var ids = [];
@@ -179,7 +180,7 @@ const PAYMENT_PATCH_API = (request, response) => {
     }
 
     Payment.findOne({ _id: id, _contract: request.body._contract }).then((orig) => {
-        if (orig.type == 'D') {
+        if (orig.type == 'D' || orig.type == 'RD') {
             orig.comment = body.comment;
             orig.amount = body.amount;
             orig.dateModified = generateLocalDateTime();
