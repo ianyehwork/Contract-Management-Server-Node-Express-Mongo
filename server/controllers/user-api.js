@@ -111,100 +111,115 @@ const USER_LOGOUT_DELETE_API = (request, response) => {
     };
 };
 
+
 /**
- * Reset the user password
+ * Send forget password email to the user
  * @param {*} request 
  * @param {*} response 
  */
-const PASSWORD_RESET_POST_API = (request, response) => {
-    var body = _.pick(request.body, ['username', 'password', 'cPassword', 'token']);
-    if (body.cPassword) {
-        User.findByCredentials(body.username, body.cPassword).then((user) => {
-            if (user) {
-                // hash the new password
-                bcrypt.genSalt(10, (err, salt) => {
-                    bcrypt.hash(body.password, salt, (err, hash) => {
-                        body.password = hash;
-                        // update the old password
-                        User.findOneAndUpdate({ _id: user._id },
-                            { $set: { password: body.password } },
-                            { new: true }).then((user) => {
-                                if (user) {
-                                    return response.status(200).send();
-                                } else {
-                                    return response.status(404).send();
-                                }
-                            });
-                    });
-                });
-            }
-        }).catch((err) => {
-            response.status(400).send();
-        });
-    } else {
-        if (!body.token) {
-            // token is not provided, check if the user exists
-            User.findOne({
-                username: body.username
-            }).then((user) => {
-                if (user) {
-                    // generate a random token
-                    const token = generateRandomToken(64);
-                    const user_id = user._id;
-                    var passwordToken = new PasswordToken({
-                        token,
-                        _owner: user_id
-                    });
-                    // save the token
-                    passwordToken.save().then((passwordToken) => {
-                        // send the password reset email to user
-                        response.send(sendPasswordResetEmail(user.email, user.username, passwordToken.token));
-                    }, (err) => {
-                        response.status(400).send(err);
-                    });
-                } else {
-                    response.status(400).send();
-                }
+const PASSWORD_FORGET_POST_API = (request, response) => {
+    var body = _.pick(request.body, ['username']);
+
+    // token is not provided, check if the user exists
+    User.findOne({
+        username: body.username
+    }).then((user) => {
+        if (user) {
+            // generate a random token
+            const token = generateRandomToken(64);
+            const user_id = user._id;
+            var passwordToken = new PasswordToken({
+                token,
+                _owner: user_id
+            });
+            // save the token
+            passwordToken.save().then((passwordToken) => {
+                // send the password reset email to user
+                response.send(sendPasswordResetEmail(user.email, user.username, passwordToken.token));
             }, (err) => {
                 response.status(400).send(err);
             });
         } else {
-            // Verify if the token is valid.
-            PasswordToken.findOne({
-                token: body.token
-            }).then((token) => {
-                if (token) {
-                    // hash the new password
-                    bcrypt.genSalt(10, (err, salt) => {
-                        bcrypt.hash(body.password, salt, (err, hash) => {
-                            body.password = hash;
-                            // update the old password
-                            User.findOneAndUpdate({ _id: token._owner },
-                                { $set: { password: body.password } },
-                                { new: true }).then((user) => {
-                                    if (user) {
-                                        // delete the password token
-                                        PasswordToken.remove({
-                                            _owner: user._id
-                                        }).then((token) => {
-                                            return response.status(200).send();
-                                        }, (error) => {
-                                            return response.status(500).send(error);
-                                        });
-                                    } else {
-                                        return response.status(404).send();
-                                    }
+            response.status(400).send();
+        }
+    }, (err) => {
+        response.status(400).send(err);
+    });
+};
+
+/**
+ * Reset the user password via Temporary Token
+ * @param {*} request 
+ * @param {*} response 
+ */
+const PASSWORD_RESET_POST_API = (request, response) => {
+    var body = _.pick(request.body, ['username', 'password', 'token']);
+
+    // Verify if the token is valid.
+    PasswordToken.findOne({
+        token: body.token
+    }).then((token) => {
+        if (token) {
+            // hash the new password
+            bcrypt.genSalt(10, (err, salt) => {
+                bcrypt.hash(body.password, salt, (err, hash) => {
+                    body.password = hash;
+                    // update the old password
+                    User.findOneAndUpdate({ _id: token._owner },
+                        { $set: { password: body.password } },
+                        { new: true }).then((user) => {
+                            if (user) {
+                                // delete the password token
+                                PasswordToken.remove({
+                                    _owner: user._id
+                                }).then((token) => {
+                                    return response.status(200).send();
+                                }, (error) => {
+                                    return response.status(500).send(error);
                                 });
+                            } else {
+                                return response.status(404).send();
+                            }
                         });
-                    });
-                } else {
-                    response.status(404).send();
-                }
-            }).catch((err) => {
-                response.status(400).send(err);
+                });
+            });
+        } else {
+            response.status(404).send();
+        }
+    }).catch((err) => {
+        response.status(400).send(err);
+    });
+};
+
+/**
+ * Reset the user password via Authentication
+ * @param {*} request 
+ * @param {*} response 
+ */
+const PASSWORD_CHANGE_POST_API = (request, response) => {
+    var body = _.pick(request.body, ['username', 'password', 'cPassword', 'token']);
+    User.findByCredentials(body.username, body.cPassword).then((user) => {
+        if (user) {
+            // hash the new password
+            bcrypt.genSalt(10, (err, salt) => {
+                bcrypt.hash(body.password, salt, (err, hash) => {
+                    body.password = hash;
+                    // update the old password
+                    User.findOneAndUpdate({ _id: user._id },
+                        { $set: { password: body.password } },
+                        { new: true }).then((user) => {
+                            if (user) {
+                                return response.status(200).send();
+                            } else {
+                                return response.status(404).send();
+                            }
+                        });
+                });
             });
         }
-    }
+    }).catch((err) => {
+        response.status(400).send();
+    });
 };
 
 /**
@@ -253,7 +268,9 @@ module.exports = {
     USER_ME_GET_API,
     USER_LOGIN_POST_API,
     USER_LOGOUT_DELETE_API,
+    PASSWORD_FORGET_POST_API,
     PASSWORD_RESET_POST_API,
+    PASSWORD_CHANGE_POST_API,
     CUSTOMER_TOKEN_POST_API,
     CUSTOMER_TOKEN_DELETE_API
 };
