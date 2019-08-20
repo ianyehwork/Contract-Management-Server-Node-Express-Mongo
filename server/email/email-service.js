@@ -1,17 +1,34 @@
-var nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
+const OAuth2 = google.auth.OAuth2;
 
-var transporter = nodemailer.createTransport({
-    service: 'gmail',
+const oauth2Client = new OAuth2(
+    process.env.CLIENT_ID, // ClientID
+    process.env.CLIENT_SECRET, // Client Secret
+    process.env.REDIRECT_URL // Redirect URL
+);
+
+oauth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN
+});
+const accessToken = oauth2Client.getAccessToken()
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
     auth: {
-        user: process.env.EMAIL_SERVICE_ACC,
-        pass: process.env.EMAIL_SERVICE_PWD
+         type: "OAuth2",
+         user: process.env.EMAIL_SERVICE_ACC, 
+         clientId: process.env.CLIENT_ID,
+         clientSecret: process.env.CLIENT_SECRET,
+         refreshToken: process.env.REFRESH_TOKEN,
+         accessToken: accessToken
     }
 });
 
 var sendPasswordResetEmail = (receiverEmail, username, token) => {
     var resetPasswordUrl = `${process.env.APP_BASE_URL}/password-reset/${username}/${token}`;
     var mailOptions = {
-        from: 'ian.yeh.work@gmail.com',
+        from: process.env.EMAIL_SERVICE_ACC,
         to: receiverEmail,
         subject: '[PLMS] Password reset request.',
         html:`<h1>Hi @${username}!</h1>
@@ -22,8 +39,10 @@ var sendPasswordResetEmail = (receiverEmail, username, token) => {
 
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
+            console.log(error);
             return error;
         } else {
+            console.log(info.response);
             return 'Email sent: ' + info.response;
         }
     });
