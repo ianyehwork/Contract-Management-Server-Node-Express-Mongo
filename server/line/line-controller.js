@@ -76,19 +76,20 @@ const processLineMessage = (data) => {
                             sendMessage(replyTokenValue, NO_ACTIVE_CONTRACT);
                         } else {
                             for (i = 0; i < contracts.length; i++) {
-                                function getPayments(callback, contractId){
-                                    Payment.find({_contract: contractId}).then((payments) => {
-                                        callback(payments);
-                                    })
-                                }
+                                var promise1 = contracts[i];
+                                var promise2 = Payment.find({_contract: contracts[i]._id});
 
-                                getPayments(function(payments){
+                                // Use promise to make sure both information is available before the message is send
+                                Promise.all(promise1, promise2).then(function(values) {
+                                    contract = values[0];
+                                    payments = values[1];
+
                                     var message = '';
-                                    message += '起租日期: ' + contracts[i].sYear + '年' + contracts[i].sMonth + '月' + contracts[i].sDay + '日\n';
-                                    message += '月租金: ' + contracts[i]._lot.rent + '\n';
-                                    message += '繳費週期: ' + contracts[i].pFrequency + '個月\n';
-                                    message += '下次繳費日期: ' + contracts[i].pYear + '年' + contracts[i].pMonth + '月' + contracts[i].pDay + '日\n';
-                                    message += '下次繳費金額: ' + (contracts[i].pFrequency * contracts[i]._lot.rent) + '\n';
+                                    message += '起租日期: ' + contract.sYear + '年' + contract.sMonth + '月' + contract.sDay + '日\n';
+                                    message += '月租金: ' + contract._lot.rent + '\n';
+                                    message += '繳費週期: ' + contract.pFrequency + '個月\n';
+                                    message += '下次繳費日期: ' + contract.pYear + '年' + contract.pMonth + '月' + contract.pDay + '日\n';
+                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
                                     
                                     if(payments) {
                                         message += '繳費紀錄:\n';
@@ -102,7 +103,7 @@ const processLineMessage = (data) => {
                                         }
                                     }
                                     sendMessage(replyTokenValue, message);
-                                }, contracts._id);
+                                });
                             }
                         }
                     });
