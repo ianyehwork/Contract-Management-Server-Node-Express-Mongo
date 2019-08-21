@@ -95,7 +95,7 @@ const processLineMessage = (data) => {
     
                                         var message = '';
                                         message += '起租日期: ' + contract.sYear + '/' + contract.sMonth + '/' + contract.sDay + '\n';
-                                        messgae += '車位: ' + contract._lot.identifier + '\n';
+                                        message += '車位: ' + contract._lot.identifier + '\n';
                                         message += '月租金: ' + contract._lot.rent + '\n';
                                         message += '繳費週期: ' + contract.pFrequency + '個月\n\n';
                                         
