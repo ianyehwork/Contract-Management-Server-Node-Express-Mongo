@@ -104,7 +104,7 @@ const processLineMessage = (data) => {
                                         for (var k = 0; k < payments.length; k++) {
                                             var payment = '';
                                             if(payments[k].type == 'R' || payments[k].type == 'D') {
-                                                var d = payments[i].dateCreated;
+                                                var d = payments[k].dateCreated;
                                                 var date = d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
                                                 var type = payments[k].type == 'R' ? '租金' : '押金';
                                                 payment +=  date + ' ' + type + ' ' + payments[k].amount + '\n';
