@@ -77,6 +77,7 @@ const processLineMessage = (data) => {
                         } else {
                             
                             var promises = [];
+                            console.log(contracts.length);
                             for (i = 0; i < contracts.length; i++) {
                                 
                                 if(contracts[i]) {
@@ -88,14 +89,17 @@ const processLineMessage = (data) => {
                                 }
                             }
 
+                            console.log(promises.length);
+
                             Promise.all(promises).then((values) => {
                                 var message = '';
+                                console.log(values.length);
                                 for(var i = 0 ; i < values.length; i++) {
+                                    console.log('Contract ' + i);
                                     var value = values[i];
                                     contract = value[0];
                                     payments = value[1];
 
-                                    if(message) message += '\n';
                                     message += '起租日期: ' + contract.sYear + '/' + contract.sMonth + '/' + contract.sDay + '\n';
                                     message += '車位: ' + contract._lot.identifier + '\n';
                                     message += '月租金: ' + contract._lot.rent + '\n';
@@ -114,8 +118,9 @@ const processLineMessage = (data) => {
                                         }
                                     }
                                     message += '下次繳費日期: ' + contract.pYear + '/' + contract.pMonth + '/' + contract.pDay + '\n';
-                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
+                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n\n';
                                 }
+
                                 sendMessage(replyTokenValue, message);
                             });
                         }
