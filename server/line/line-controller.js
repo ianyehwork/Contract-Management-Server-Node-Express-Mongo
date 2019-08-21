@@ -3,7 +3,6 @@ const _ = require('lodash');
 const line = require('@line/bot-sdk');
 const { Customer } = require('./../models/customer');
 const { Contract } = require('./../models/contract');
-const { ParkingLot } = require('./../models/parking-lot');
 const { Payment } = require('./../models/payment');
 const { LineToken } = require('./../models/line-token');
 
@@ -13,10 +12,10 @@ const client = new line.Client({
 
 // const PLEASE_EMOJI = '\u{10007A}';
 // const HAPPY_EMOJI = '\u{100090}';
-const IDENTITY_NOT_VERIFIED = '身份未驗證! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL*';
+const IDENTITY_NOT_VERIFIED = '身份未驗證! 請輸入身份驗證碼(7位).';
 const IDENTITY_VERIFIED = '身份已驗證! 您的身份是: ';
 const SYSTEM_ERROR = '系統錯誤! 請通知管理員, 謝謝!';
-const CUSTOMER_TOKEN_NOT_EXISTS = '驗證碼不存在! 請輸入身份驗證碼(6位), 並用*結尾. 例如: A82JuL*';
+const CUSTOMER_TOKEN_NOT_EXISTS = '驗證碼過期或不存在! 請輸入身份驗證碼(7位).';
 const MENU_INSTRUCTION = '指令清單:\n新用戶身分驗證請輸入 *1\n合同/付款查詢請輸入 *2'
 const NO_ACTIVE_CONTRACT = '找不到生效的合同！'
 
@@ -29,7 +28,9 @@ const NO_ACTIVE_CONTRACT = '找不到生效的合同！'
 const isSignatureValid = (headerSignature, requestBody) => {
     const channelSecret = process.env.LINE_CHANNEL_SECRET; // Channel secret string
     const body = JSON.stringify(requestBody); // Request body string
-    console.log(body);
+    if(process.env.LINE_TEST_MODE) {
+        console.log(body);
+    }
     const signature = crypto
         .createHmac('SHA256', channelSecret)
         .update(body).digest('base64');
@@ -77,11 +78,9 @@ const processLineMessage = (data) => {
                         } else {
                             
                             var promises = [];
-                            console.log(contracts.length);
                             for (i = 0; i < contracts.length; i++) {
                                 
                                 if(contracts[i]) {
-                                    
                                     // Promise can be a primitive value / object
                                     var promise1 = contracts[i];
                                     var promise2 = Payment.find({_contract: contracts[i]._id});
@@ -89,14 +88,10 @@ const processLineMessage = (data) => {
                                 }
                             }
 
-                            console.log(promises.length);
-
                             Promise.all(promises).then((values) => {
                                 var message = '';
-                                console.log(values.length);
-                                for(var i = 0 ; i < values.length; i++) {
-                                    console.log('Contract ' + i);
-                                    var value = values[i];
+                                for(var j = 0 ; j < values.length; j++) {
+                                    var value = values[j];
                                     contract = value[0];
                                     payments = value[1];
 
@@ -106,19 +101,19 @@ const processLineMessage = (data) => {
                                     message += '繳費週期: ' + contract.pFrequency + '個月\n';
                                     if(payments) {
                                         message += '繳費紀錄:\n';
-                                        for (i = 0; i < payments.length; i++) {
+                                        for (var k = 0; k < payments.length; k++) {
                                             var payment = '';
-                                            if(payments[i].type == 'R' || payments[i].type == 'D') {
+                                            if(payments[k].type == 'R' || payments[k].type == 'D') {
                                                 var d = payments[i].dateCreated;
                                                 var date = d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
-                                                var type = payments[i].type == 'R' ? '租金' : '押金';
-                                                payment +=  date + ' ' + type + ' ' + payments[i].amount + '\n';
+                                                var type = payments[k].type == 'R' ? '租金' : '押金';
+                                                payment +=  date + ' ' + type + ' ' + payments[k].amount + '\n';
                                                 message += payment;
                                             }
                                         }
                                     }
                                     message += '下次繳費日期: ' + contract.pYear + '/' + contract.pMonth + '/' + contract.pDay + '\n';
-                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n\n';
+                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
                                 }
 
                                 sendMessage(replyTokenValue, message);
