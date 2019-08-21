@@ -2,10 +2,12 @@ const _ = require('lodash');
 const { isSignatureValid, processLineMessage } = require('../line/line-controller');
 
 const WEBHOOK_POST_API = (request, response) => {
-    // console.log('request.headers');
-    // console.log(request.headers);
-    // console.log('request.body');
-    // console.log(request.body);
+    if(process.env.LINE_TEST_MODE) {
+        console.log('request.headers');
+        console.log(request.headers);
+        console.log('request.body');
+        console.log(request.body);
+    }
     if (isSignatureValid(request.headers['x-line-signature'], request.body)) {
         // Process the incoming messages
         _.forEach(request.body['events'], function (value) {

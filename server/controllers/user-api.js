@@ -10,7 +10,7 @@ const { PasswordToken } = require('./../models/password-token');
 const { LoginToken } = require('./../models/login-token');
 const { generateRandomToken } = require('./../util/utility');
 const { sendPasswordResetEmail, sendLoginTokenEmail } = require('./../email/email-service');
-const { CustomerToken } = require('./../models/customer-token');
+const { LineToken } = require('./../models/line-token');
 const { Customer } = require('./../models/customer');
 const bcrypt = require('bcryptjs');
 
@@ -231,14 +231,14 @@ const CUSTOMER_TOKEN_POST_API = (request, response) => {
     var body = _.pick(request.body, ['_id']);
     Customer.findOne({ _id: body._id }).then((customer) => {
         if (customer) {
-            CustomerToken.findOne({ _customer: customer._id }).then((ctoken) => {
+            LineToken.findOne({ _customer: customer._id }).then((ctoken) => {
                 if (ctoken) {
                     response.send(ctoken);
                 } else {
-                    var customerToken = new CustomerToken();
-                    customerToken._customer = customer._id;
-                    customerToken.token = generateRandomToken(6);
-                    customerToken.save().then((token) => {
+                    var lineToken = new LineToken();
+                    lineToken._customer = customer._id;
+                    lineToken.token = generateRandomToken(6);
+                    lineToken.save().then((token) => {
                         response.send(token);
                     }).catch((err) => {
                         response.status(500).send(err);

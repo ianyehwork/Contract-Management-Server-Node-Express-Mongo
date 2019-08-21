@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 
-var CustomerTokenSchema = new mongoose.Schema({
+var LineTokenSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true
@@ -21,14 +21,14 @@ var CustomerTokenSchema = new mongoose.Schema({
  * Before the user is convertored into JSON object,
  * only the _id KVP is selected.
  */
-CustomerTokenSchema.methods.toJSON = function(){
+LineTokenSchema.methods.toJSON = function(){
     var user = this;
     var userObject = user.toObject();
     return _.pick(userObject, ['token']);
 };
 
-var CustomerToken = mongoose.model('CustomerToken', CustomerTokenSchema);
+var LineToken = mongoose.model('LineToken', LineTokenSchema);
 
 module.exports = {
-    CustomerToken
+    LineToken
 };

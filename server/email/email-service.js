@@ -50,7 +50,7 @@ var sendPasswordResetEmail = (receiverEmail, username, token) => {
 
 var sendLoginTokenEmail = (receiverEmail, username, token) => {
     var mailOptions = {
-        from: 'ian.yeh.work@gmail.com',
+        from: process.env.EMAIL_SERVICE_ACC,
         to: receiverEmail,
         subject: '[PLMS] Login token request.',
         html:`<h1>Hi @${username}!</h1>
