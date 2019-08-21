@@ -75,49 +75,49 @@ const processLineMessage = (data) => {
                         if(!contracts) {
                             sendMessage(replyTokenValue, NO_ACTIVE_CONTRACT);
                         } else {
-                            if(process.env.LINE_TEST_MODE) {
-                                console.log(contracts.length);
-                            }
+                            
+                            var promises = [];
                             for (i = 0; i < contracts.length; i++) {
-                                if(process.env.LINE_TEST_MODE) {
-                                    console.log(contracts[i]._id);
-                                }
+                                
                                 if(contracts[i]) {
                                     
                                     // Promise can be a primitive value / object
                                     var promise1 = contracts[i];
                                     var promise2 = Payment.find({_contract: contracts[i]._id});
-                                    
-                                    // Use promise to make sure both information is available before the message is send
-                                    Promise.all([promise1, promise2]).then((values) => {
-                                        contract = values[0];
-                                        payments = values[1];
-    
-                                        var message = '';
-                                        message += '起租日期: ' + contract.sYear + '/' + contract.sMonth + '/' + contract.sDay + '\n';
-                                        message += '車位: ' + contract._lot.identifier + '\n';
-                                        message += '月租金: ' + contract._lot.rent + '\n';
-                                        message += '繳費週期: ' + contract.pFrequency + '個月\n\n';
-                                        
-                                        if(payments) {
-                                            message += '繳費紀錄:\n';
-                                            for (i = 0; i < payments.length; i++) {
-                                                var payment = '';
-                                                if(payments[i].type == 'R' || payments[i].type == 'D') {
-                                                    var d = payments[i].dateCreated;
-                                                    var date = d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
-                                                    var type = payments[i].type == 'R' ? '租金' : '押金';
-                                                    payment +=  date + ' ' + type + ' ' + payments[i].amount + '\n';
-                                                    message += payment;
-                                                }
-                                            }
-                                        }
-                                        message += '\n下次繳費日期: ' + contract.pYear + '/' + contract.pMonth + '/' + contract.pDay + '\n';
-                                        message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
-                                        sendMessage(replyTokenValue, message);
-                                    });
+                                    promises.push(Promise.all([promise1, promise2]));
                                 }
                             }
+
+                            Promise.all(promises).then((values) => {
+                                var message = '';
+                                for(var i = 0 ; i < values.length; i++) {
+                                    var value = values[i];
+                                    contract = value[0];
+                                    payments = value[1];
+
+                                    if(message) message += '\n';
+                                    message += '起租日期: ' + contract.sYear + '/' + contract.sMonth + '/' + contract.sDay + '\n';
+                                    message += '車位: ' + contract._lot.identifier + '\n';
+                                    message += '月租金: ' + contract._lot.rent + '\n';
+                                    message += '繳費週期: ' + contract.pFrequency + '個月\n';
+                                    if(payments) {
+                                        message += '繳費紀錄:\n';
+                                        for (i = 0; i < payments.length; i++) {
+                                            var payment = '';
+                                            if(payments[i].type == 'R' || payments[i].type == 'D') {
+                                                var d = payments[i].dateCreated;
+                                                var date = d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
+                                                var type = payments[i].type == 'R' ? '租金' : '押金';
+                                                payment +=  date + ' ' + type + ' ' + payments[i].amount + '\n';
+                                                message += payment;
+                                            }
+                                        }
+                                    }
+                                    message += '下次繳費日期: ' + contract.pYear + '/' + contract.pMonth + '/' + contract.pDay + '\n';
+                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
+                                }
+                                sendMessage(replyTokenValue, message);
+                            });
                         }
                     });
                 }
