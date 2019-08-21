@@ -76,34 +76,36 @@ const processLineMessage = (data) => {
                             sendMessage(replyTokenValue, NO_ACTIVE_CONTRACT);
                         } else {
                             for (i = 0; i < contracts.length; i++) {
-                                var promise1 = contracts[i];
-                                var promise2 = Payment.find({_contract: contracts[i]._id});
-
-                                // Use promise to make sure both information is available before the message is send
-                                Promise.all(promise1, promise2).then(function(values) {
-                                    contract = values[0];
-                                    payments = values[1];
-
-                                    var message = '';
-                                    message += '起租日期: ' + contract.sYear + '年' + contract.sMonth + '月' + contract.sDay + '日\n';
-                                    message += '月租金: ' + contract._lot.rent + '\n';
-                                    message += '繳費週期: ' + contract.pFrequency + '個月\n';
-                                    message += '下次繳費日期: ' + contract.pYear + '年' + contract.pMonth + '月' + contract.pDay + '日\n';
-                                    message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
+                                if(contracts[i]) {
+                                    var promise1 = contracts[i];
+                                    var promise2 = Payment.find({_contract: contracts[i]._id});
                                     
-                                    if(payments) {
-                                        message += '繳費紀錄:\n';
-                                        for (i = 0; i < payments.length; i++) {
-                                            var payment = '';
-                                            if(payments[i].type == 'R' || payments[i].type == 'D') {
-                                                var type = payments[i].type == 'R' ? '租金' : '押金';
-                                                payment += payments[i].dateCreated + ' ' + type + ' ' + payments[i].amount + '\n';
-                                                message += payment;
+                                    // Use promise to make sure both information is available before the message is send
+                                    Promise.all([promise1, promise2]).then((values) => {
+                                        contract = values[0];
+                                        payments = values[1];
+    
+                                        var message = '';
+                                        message += '起租日期: ' + contract.sYear + '年' + contract.sMonth + '月' + contract.sDay + '日\n';
+                                        message += '月租金: ' + contract._lot.rent + '\n';
+                                        message += '繳費週期: ' + contract.pFrequency + '個月\n';
+                                        message += '下次繳費日期: ' + contract.pYear + '年' + contract.pMonth + '月' + contract.pDay + '日\n';
+                                        message += '下次繳費金額: ' + (contract.pFrequency * contract._lot.rent) + '\n';
+                                        
+                                        if(payments) {
+                                            message += '繳費紀錄:\n';
+                                            for (i = 0; i < payments.length; i++) {
+                                                var payment = '';
+                                                if(payments[i].type == 'R' || payments[i].type == 'D') {
+                                                    var type = payments[i].type == 'R' ? '租金' : '押金';
+                                                    payment += payments[i].dateCreated + ' ' + type + ' ' + payments[i].amount + '\n';
+                                                    message += payment;
+                                                }
                                             }
                                         }
-                                    }
-                                    sendMessage(replyTokenValue, message);
-                                });
+                                        sendMessage(replyTokenValue, message);
+                                    });
+                                }
                             }
                         }
                     });
