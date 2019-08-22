@@ -237,10 +237,31 @@ const PAYMENT_PATCH_API = (request, response) => {
     });
 };
 
+// Aggregation the total rent in the last 6 months
+const PAYMENT_SUMMARY_GET_API = (request, response) => {
+    var curr = new Date();
+    var prev6M = new Date();
+    prev6M.setMonth(prev6M.getMonth() - 5);
+
+    Payment.aggregate([
+        { $match: { $and: [{type: 'R'}, {dateCreated : {$gt: prev6M, $lt: curr}}] } },
+        { $group: {
+            _id: { year: {$year: "$dateCreated"}, month: {$month: "$dateCreated"}}, 
+            total: { $sum: "$amount" }
+        }}], function (err, result) {
+        if (err) {
+            response.send(err);
+            return;
+        }
+        response.send(result);
+    });
+};
+
 module.exports = {
     PAYMENT_POST_API,
     PAYMENT_GET_API,
     PAYMENT_GET_ID_API,
     PAYMENT_DELETE_API,
-    PAYMENT_PATCH_API
+    PAYMENT_PATCH_API,
+    PAYMENT_SUMMARY_GET_API
 };

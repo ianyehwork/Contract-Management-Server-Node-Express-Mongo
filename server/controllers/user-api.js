@@ -237,7 +237,7 @@ const CUSTOMER_TOKEN_POST_API = (request, response) => {
                 } else {
                     var lineToken = new LineToken();
                     lineToken._customer = customer._id;
-                    lineToken.token = generateRandomToken(6);
+                    lineToken.token = generateRandomToken(6) + '*';
                     lineToken.save().then((token) => {
                         response.send(token);
                     }).catch((err) => {
