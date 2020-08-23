@@ -1,5 +1,15 @@
-# Introduction
+## Table of Content
 
+[1. Server Architecture](#Introduction)  
+[2. Project Dependencies](#Dependencies)  
+[3. Project Structure](#Structure)  
+
+<a name="Introduction"/>
+
+## Server Architecture
+<img src="docs/server-architecture-diagram.png">
+
+<a name="Dependencies"/>
 
 ## Project Dependencies
 1) @line/bot-sdk: The LINE Messaging API SDK for nodejs makes it easy to develop bots.
@@ -19,6 +29,8 @@
 14) pdfmake: PDF document generation library for server-side and client-side usage in pure JavaScript.
 15) request: Request is designed to be the simplest way possible to make http calls
 16) validator: A library of string validators and sanitizers.
+
+<a name="Structure"/>
 
 ## Project Structure
 <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server">server</a><br>
@@ -63,7 +75,6 @@
 	│   └── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/models/user.js">user.js</a><br>
 	├── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/multer/">multer</a><br>
 	│   └── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/multer/poster-image-upload.js">poster-image-upload.js</a><br>
-	├── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/out.html">out.html</a><br>
 	├── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/reports/">reports</a><br>
 	│   └── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/reports/table-template.js">table-template.js</a><br>
 	├── <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server/routes/">routes</a><br>
