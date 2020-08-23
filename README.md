@@ -1,8 +1,24 @@
 # Introduction
 
 
-## Project Requirement
-
+## Project Dependencies
+1) @line/bot-sdk: The LINE Messaging API SDK for nodejs makes it easy to develop bots.
+2) bcryptjs: Optimized bcrypt in JavaScript with zero dependencies.
+3) body-parser: Node.js body parsing middleware.
+4) crypto-js: JavaScript library of crypto standards.
+5) express: Fast, unopinionated, minimalist web framework for node.
+6) googleapis: Node.js client library for using Google APIs. Support for authorization and authentication with OAuth 2.0, API Keys and JWT tokens is included.
+7) jsonwebtoken: An implementation of JSON Web Tokens.
+8) lodash: The Lodash library exported as Node.js modules.
+9) moment: Lightweight JavaScript date library for parsing, validating, manipulating, and formatting dates.
+10) mongodb: Official MongoDB driver for Node.js.
+11) mongoose: MongoDB object modeling tool designed to work in an asynchronous environment. Mongoose supports both promises and callbacks.
+11) mongoose-transactions: Atomicity and Transactions for mongoose.
+12) multer: Node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
+13) nodemailer: Send e-mails from Node.js.
+14) pdfmake: PDF document generation library for server-side and client-side usage in pure JavaScript.
+15) request: Request is designed to be the simplest way possible to make http calls
+16) validator: A library of string validators and sanitizers.
 
 ## Project Structure
 <a href="https://github.com/ianyehwork/Contract-Management-Server-Node-Express-Mongo/tree/master/server">server</a><br>
